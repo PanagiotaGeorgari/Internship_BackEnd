@@ -1,6 +1,6 @@
 package com.logicea.cards;
 
-public enum card_status {
+public enum CardStatus {
     TODO,
     IN_PROGRESS,
     DONE;
