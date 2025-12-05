@@ -1,44 +1,33 @@
 package com.logicea.cards;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity //this classs is also an entity in my sql base
 @Table(name="cards") //this class interacts with the table cards in database
-
 public class Card {
     @Id // the primary key is the card_id
-    @GeneratedValue(strategy = GenerationType.AUTO) // automated generated the card_id (int)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // automated generated the card_id (int)
 
-    private int card_id;
+    @Column(name = "card_id")
+    private int cardId;
     private String name;
     private String description;
     private String color;
 
     @Enumerated(EnumType.STRING) //stores the enum status as string in base
-    private card_status status;
+    private CardStatus status=setStatus(CardStatus.valueOf("TODO"));
 
-    private int user_id;
-
-    //constructor
-    public Card(int card_id, String name, String description, String color, card_status status, int user_id) {
-        this.card_id = card_id;
-        this.name = name;
-        this.description = description;
-        this.color = color;
-        this.status = status;
-        this.user_id = user_id;
-    }
-
-    //empty constructor
-    public Card() {
-    }
+    @Column(name = "user_id")
+    @JsonProperty("user_id")
+    private int userId;
 
     //------getters / setters------------------------------
-    public int getCard_id() {
-        return card_id;
+    public int getCardId() {
+        return cardId;
     }
 
-    public void setCard_id(int card_id) {
-        this.card_id = card_id;
+    public void setCardId(int card_id) {
+        this.cardId = card_id;
     }
 
     public String getName() {
@@ -65,26 +54,27 @@ public class Card {
         this.color = color;
     }
 
-    public card_status getStatus() {
+    public CardStatus getStatus() {
         return status;
     }
 
-    public void setStatus(card_status status) {
+    public CardStatus setStatus(CardStatus status) {
         this.status = status;
+        return status;
     }
 
-    public int getUser_id() {
-        return user_id;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     //-------------------------------------------------
 
     public String toString() {
-        System.out.println("Card ID: " + card_id+"\nName: "+name+"\nDescription: "+description+"\nColor: "+color+"\nStatus: "+status+"\nUserID: "+user_id);
+        System.out.println("Card ID: " + cardId +"\nName: "+name+"\nDescription: "+description+"\nColor: "+color+"\nStatus: "+status+"\nUserID: "+ userId);
         return null;
     }
 }
