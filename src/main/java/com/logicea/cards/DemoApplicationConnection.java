@@ -1,4 +1,4 @@
-package com.logicea.cards;
+/*package com.logicea.cards;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,4 +25,4 @@ public class DemoApplicationConnection implements CommandLineRunner {
         System.out.println("Found" + cardCount + " cards");
         System.out.println("--------------------------------------");
     }
-}
+}*/
