@@ -1,4 +1,7 @@
 package com.logicea.cards;
-
-public class CardNotFoundException {
+class CardNotFoundException extends RuntimeException {
+     CardNotFoundException(int id) {
+        super("Card with id " + id + " not found");
+     }
 }
+
