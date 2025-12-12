@@ -25,11 +25,10 @@ public class Card {
     private String color;
 
     @NotNull(message = "status can not be empty")
-    @Enumerated(EnumType.STRING) //stores the enum status as string in base
+    @Enumerated(EnumType.STRING)
     private CardStatus status=CardStatus.TODO;
 
     @Column(name = "user_id")
-    @JsonProperty("user_id")
     private int userId;
 
     //------getters / setters------------------------------
@@ -37,8 +36,8 @@ public class Card {
         return cardId;
     }
 
-    public void setCardId(int card_id) {
-        this.cardId = card_id;
+    public void setCardId(int cardId) {
+        this.cardId = cardId;
     }
 
     public String getName() {

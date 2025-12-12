@@ -10,9 +10,5 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
-  sql:
-    init:
-      mode: embedded
-      continue-on-error: true
-      schema-locations: classpath:/db/schema.sql
-      data-locations: classpath:/db/data.sql
+
+

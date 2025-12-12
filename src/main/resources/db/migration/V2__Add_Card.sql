@@ -1,0 +1,1 @@
+INSERT INTO cards (name,description,color,user_id) VALUES ('new card after flyway', 'new card after flyway ', '#abc123',3);
