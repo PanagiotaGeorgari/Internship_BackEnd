@@ -1,6 +1,11 @@
 package com.logicea.cards;
+
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 @RestController // i prefer to return data (JSON) rather than HTML
@@ -26,15 +31,14 @@ public class CardController {
         return repository.findById(cardId).orElseThrow(() -> new CardNotFoundException(cardId));
     }
 
-    @PostMapping            //HTTP POST requests in RESTful web services
-                                // @Valid is for validation , begins the validation for card's elements
-    Card newCard(@Valid @RequestBody Card newCard) { //bind the body of an HTTP request to a method parameter in a controller handler method
+    @PostMapping
+    Card newCard(@Valid @RequestBody Card newCard) {
         return repository.save(newCard);
     }
 
-    @PutMapping("/{cardId}")//HTTP PUT requests in RESTful web services
-    Card replaceCard(@Valid @RequestBody Card newCard, @PathVariable int cardId) throws CardNotFoundException {
-        return repository.findById(cardId).map(card -> {
+    @PutMapping("/{id}")
+    Card replaceCard(@Valid @RequestBody Card newCard, @PathVariable int id) throws CardNotFoundException {
+        return repository.findById(id).map(card -> {
             card.setCardId(newCard.getCardId());
             card.setName(newCard.getName());
             card.setDescription(newCard.getDescription());
@@ -42,13 +46,12 @@ public class CardController {
             card.setStatus(newCard.getStatus());
             card.setUserId(newCard.getUserId());
             return repository.save(newCard);
-        }).orElseThrow(() -> new CardNotFoundException(cardId));
+        }).orElseThrow(() -> new CardNotFoundException(id));
     }
 
-
-    @PatchMapping("/{cardId}")//HTTP PATCH requests in RESTful web services
-    Card partialUpdateCard(@Valid @RequestBody Card updates, @PathVariable int cardId) throws CardNotFoundException {
-        return repository.findById(cardId).map(card -> {
+    @PatchMapping("/{id}")
+    Card partialUpdateCard(@Valid @RequestBody Card updates, @PathVariable int id) throws CardNotFoundException {
+        return repository.findById(id).map(card -> {
             if (updates.getName() != null) {
                 card.setName(updates.getName());
             }
@@ -66,16 +69,31 @@ public class CardController {
             }
 
             return repository.save(card);
-        }).orElseThrow(() -> new CardNotFoundException(cardId));
+        }).orElseThrow(() -> new CardNotFoundException(id));
     }
 
-    @DeleteMapping("/{cardId}")//HTTP DELETE requests in RESTful web services
-    void deleteCard(@PathVariable int cardId) throws CardNotFoundException {
-        if(repository.findById(cardId).isPresent()) {
-            repository.deleteById(cardId);
+    @DeleteMapping("/{id}")
+    void deleteCard(@PathVariable int id) throws CardNotFoundException {
+        if(repository.findById(id).isPresent()) {
+            repository.deleteById(id);
         }
         else {
-            throw new CardNotFoundException(cardId);
+            throw new CardNotFoundException(id);
         }
     }
+    /*@GetMapping("/{offset}/{pagesize}/{field}")
+    public Iterable<Card> getCardsPagenation(@PathVariable int offset, @PathVariable int pagesize, @PathVariable String field) {
+        Pageable pageable = PageRequest.of(offset, pagesize).withSort(Sort.by(Sort.Direction.ASC, field));
+        return repository.findAll(pageable);
+    }*/
+    @GetMapping("/")
+    public PaginationResponse<Card> getCardsPagination(@RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "5") int size,@RequestParam(name = "sort", defaultValue = "cardId") String sort)
+    {
+        // @RequestParam takes the value from the link
+        // @RequestParam if the value of the variable is missing then defaults with a sensible value
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sort));
+        Page<Card> result = repository.findAll(pageable);
+        return new PaginationResponse<>(page,size,sort,result.getTotalPages(),result.getContent());
+    }
+
 }
