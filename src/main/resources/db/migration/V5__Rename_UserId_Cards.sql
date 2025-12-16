@@ -1,0 +1,1 @@
+ALTER TABLE cards RENAME COLUMN user_id TO created_by;
