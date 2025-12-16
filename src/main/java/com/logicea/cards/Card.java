@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import java.util.Date;
+
 @Entity //this classs is also an entity in my sql base
 @Table(name="cards") //this class interacts with the table cards in database
 public class Card {
@@ -30,6 +32,17 @@ public class Card {
 
     @Column(name = "user_id")
     private int userId;
+
+    @Column(name="created_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    @Column (name="updated_by")
+    private String updatedBy;
+
+    @Column(name="updated_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedAt;
 
     //------getters / setters------------------------------
     public int getCardId() {
@@ -79,6 +92,30 @@ public class Card {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     //-------------------------------------------------
