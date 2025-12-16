@@ -88,7 +88,7 @@ public class CardController {
     }*/
     @GetMapping("/")
     public PaginationResponse<Card> getCardsPagination(@RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "5") int size,@RequestParam(name = "sort", defaultValue = "cardId") String sort)
-    {
+        {
         // @RequestParam takes the value from the link
         // @RequestParam if the value of the variable is missing then defaults with a sensible value
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sort));
