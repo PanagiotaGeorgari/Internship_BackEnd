@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController // i prefer to return data (JSON) rather than HTML
@@ -22,21 +23,25 @@ public class CardController {
 
     @GetMapping             //HTTP GET requests in RESTful web services
                             // It simplifies mapping URLs to specific controller methods
+    @PreAuthorize("hasRole('ADMIN')")
     public Iterable<Card> getAll() {
         return repository.findAll();
     }
 
-    @GetMapping("/{cardId}")    //@PathVariable we gte the cardId from the url path of the request
+    @GetMapping("/{cardId}")//@PathVariable we gte the cardId from the url path of the request
+    @PreAuthorize("hasRole('USER')")
     Card getById(@PathVariable int cardId) throws CardNotFoundException {
         return repository.findById(cardId).orElseThrow(() -> new CardNotFoundException(cardId));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     Card newCard(@Valid @RequestBody Card newCard) {
         return repository.save(newCard);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     Card replaceCard(@Valid @RequestBody Card newCard, @PathVariable int id) throws CardNotFoundException {
         return repository.findById(id).map(card -> {
             card.setCardId(newCard.getCardId());
@@ -44,12 +49,13 @@ public class CardController {
             card.setDescription(newCard.getDescription());
             card.setColor(newCard.getColor());
             card.setStatus(newCard.getStatus());
-            card.setUserId(newCard.getUserId());
+            card.setCreatedBy(newCard.getCreatedBy());
             return repository.save(newCard);
         }).orElseThrow(() -> new CardNotFoundException(id));
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     Card partialUpdateCard(@Valid @RequestBody Card updates, @PathVariable int id) throws CardNotFoundException {
         return repository.findById(id).map(card -> {
             if (updates.getName() != null) {
@@ -64,8 +70,8 @@ public class CardController {
             if (updates.getStatus() != null) {
                 card.setStatus(updates.getStatus());
             }
-            if (updates.getUserId() != 0) {
-                card.setUserId(updates.getUserId());
+            if (updates.getCreatedBy() != 0) {
+                card.setCreatedBy(updates.getCreatedBy());
             }
 
             return repository.save(card);
@@ -73,6 +79,7 @@ public class CardController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     void deleteCard(@PathVariable int id) throws CardNotFoundException {
         if(repository.findById(id).isPresent()) {
             repository.deleteById(id);
