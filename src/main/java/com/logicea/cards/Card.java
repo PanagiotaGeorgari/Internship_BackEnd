@@ -30,8 +30,8 @@ public class Card {
     @Enumerated(EnumType.STRING)
     private CardStatus status=CardStatus.TODO;
 
-    @Column(name = "user_id")
-    private int userId;
+    @Column(name = "created_by")
+    private int createdBy;
 
     @Column(name="created_at")
     @Temporal(TemporalType.TIMESTAMP)
@@ -86,12 +86,12 @@ public class Card {
         return status;
     }
 
-    public int getUserId() {
-        return userId;
+    public int getCreatedBy() {
+        return createdBy;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setCreatedBy(int createdBy) {
+        this.createdBy = createdBy;
     }
 
     public Date getCreatedAt() {
@@ -121,7 +121,7 @@ public class Card {
     //-------------------------------------------------
 
     public String toString() {
-        System.out.println("Card ID: " + cardId +"\nName: "+name+"\nDescription: "+description+"\nColor: "+color+"\nStatus: "+status+"\nUserID: "+ userId);
+        System.out.println("Card ID: " + cardId +"\nName: "+name+"\nDescription: "+description+"\nColor: "+color+"\nStatus: "+status+"\nCreatedBy: "+ createdBy+"\nUpdatedBy: "+updatedBy+"\nUpdatedAt: "+updatedAt);
         return null;
     }
 }
