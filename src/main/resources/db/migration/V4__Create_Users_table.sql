@@ -4,5 +4,5 @@ create table users
     email varchar(50) ,
     name varchar(50) ,
     role varchar(50) not null ,
-    password varchar(50) not null
+    password varchar(255) not null
 );
