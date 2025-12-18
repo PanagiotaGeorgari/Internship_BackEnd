@@ -1,4 +1,4 @@
-package com.logicea.cards;
+package com.logicea.cards.entity;
 import com.logicea.cards.enums.CardStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -29,6 +29,7 @@ public class Card {
 
     @NotNull(message = "status can not be empty")
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private CardStatus status=CardStatus.TODO;
 
     @Column(name = "created_by")
@@ -44,6 +45,20 @@ public class Card {
     @Column(name="updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Instant updatedAt;
+
+    public Card(int i, String name, String description, String color, CardStatus status, int i1, Instant instant, String s, Instant instant1) {
+        this.cardId = i;
+        this.name = name;
+        this.description = description;
+        this.color = color;
+        this.status = status;
+        this.createdBy = i1;
+        this.createdAt = instant;
+        this.updatedBy=s;
+        this.updatedAt = instant1;
+    }
+
+    public Card() {}
 
     //------getters / setters------------------------------
     public int getCardId() {
