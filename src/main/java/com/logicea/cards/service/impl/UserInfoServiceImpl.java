@@ -23,7 +23,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     @Override
     public UserInfoDto createUser(UserInfoDto userInfoDto) {
         UserInfo userInfo= UserInfoMapper.toEntity(userInfoDto);
-        userInfo.setPassword(passwordEncoder.encode(userIn  fo.getPassword()));
+        userInfo.setPassword(passwordEncoder.encode(userInfo.getPassword()));
         userInfoRepository.save(userInfo);
         return UserInfoMapper.toDto(userInfo);
     }
