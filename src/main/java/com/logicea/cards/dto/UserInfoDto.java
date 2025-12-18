@@ -1,4 +1,8 @@
 package com.logicea.cards.dto;
 
-public record UserInfoDto() {
+import com.logicea.cards.enums.UserRole;
+
+public record UserInfoDto(int userId, String email, String name,
+                          UserRole role, String password) {
+
 }
