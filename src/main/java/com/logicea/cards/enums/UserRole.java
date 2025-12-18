@@ -1,4 +1,4 @@
-package com.logicea.cards.user;
+package com.logicea.cards;
 
 public enum UserRole {
     ADMIN,
