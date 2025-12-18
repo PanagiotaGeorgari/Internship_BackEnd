@@ -52,7 +52,7 @@ public class SecurityConfig {
         httpSecurity
                 .csrf(csrfCustomizer -> csrfCustomizer.disable())
                 .securityMatchers(matchers -> matchers
-                        .requestMatchers("/api/cardswelcome", "/user-info/register")
+                        .requestMatchers("/api/cards/**","/api/cardswelcome", "/user-info/register")
                 )
                 .authorizeHttpRequests(request ->
                         request.anyRequest().permitAll() // Permit all requests that match the matchers above
