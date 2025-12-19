@@ -40,13 +40,13 @@ public class Card {
     private Instant createdAt;
 
     @Column (name="updated_by")
-    private String updatedBy;
+    private int updatedBy;
 
     @Column(name="updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Instant updatedAt;
 
-    public Card(int i, String name, String description, String color, CardStatus status, int i1, Instant instant, String s, Instant instant1) {
+    public Card(int i, String name, String description, String color, CardStatus status, int i1, Instant instant, int s, Instant instant1) {
         this.cardId = i;
         this.name = name;
         this.description = description;
@@ -118,11 +118,11 @@ public class Card {
         this.createdAt = createdAt;
     }
 
-    public String getUpdatedBy() {
+    public int  getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(String updatedBy) {
+    public void setUpdatedBy(int updatedBy) {
         this.updatedBy = updatedBy;
     }
 
