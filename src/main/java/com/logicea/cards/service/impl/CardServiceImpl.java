@@ -5,14 +5,17 @@ import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.mapper.CardMapper;
+import com.logicea.cards.mapper.UserInfoUserDetailsMapper;
 import com.logicea.cards.repository.CardRepository;
 import com.logicea.cards.service.CardService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,15 +29,22 @@ public class CardServiceImpl implements CardService {
     }
     @Override
     public List<CardDto> getAll() {
+        System.out.println("inside getAll CardServiceImpl");
+        UserInfoUserDetailsMapper user = getCurrentUser();
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         return cardRepository.findAll().stream()
+                .filter(card -> isAdmin || card.getCreatedBy() == user.getUserId())
                 .map(CardMapper::toDto)
                 .collect(Collectors.toList());
     }
 
 
 
+
     @Override
     public CardDto getById(int id) throws CardNotFoundException {
+        UserInfoUserDetailsMapper user = getCurrentUser();
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new CardNotFoundException(id));
         return CardMapper.toDto(card);
@@ -44,9 +54,18 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public CardDto newCard(CardDto cardDto) {
+        System.out.println("inside newCard CardServiceImpl");
+        UserInfoUserDetailsMapper user = getCurrentUser();
+        int userId = user.getUserId();
         Card card = CardMapper.toEntity(cardDto);
+        card.setCreatedBy(user.getUserId());
+        card.setUpdatedBy(user.getUserId());
+        card.setCreatedAt( Instant.now());
+        card.setUpdatedAt( Instant.now());
         Card savedCard = cardRepository.save(card);
+        System.out.println(savedCard.getCreatedBy());
         return CardMapper.toDto(savedCard);
+
     }
 
     @Override
@@ -96,4 +115,9 @@ public class CardServiceImpl implements CardService {
 
         return new PaginationResponse<>(page, size, sort, result.getTotalPages(), dtos);
     }
+    private UserInfoUserDetailsMapper getCurrentUser() {
+        return (UserInfoUserDetailsMapper) SecurityContextHolder.getContext(
+        ).getAuthentication().getPrincipal();
+    }
+
 }
