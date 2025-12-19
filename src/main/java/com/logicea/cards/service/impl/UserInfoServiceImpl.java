@@ -24,6 +24,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     public UserInfoDto createUser(UserInfoDto userInfoDto) {
         UserInfo userInfo= UserInfoMapper.toEntity(userInfoDto);
         userInfo.setPassword(passwordEncoder.encode(userInfo.getPassword()));
+        System.out.println(userInfo.getPassword());
         userInfoRepository.save(userInfo);
         return UserInfoMapper.toDto(userInfo);
     }
