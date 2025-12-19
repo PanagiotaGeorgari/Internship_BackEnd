@@ -6,5 +6,5 @@ import java.time.Instant;
 
 
 public record CardDto(int cardId, String name, String description, String color, CardStatus status, int createdBy,
-                      Instant createdAt, Instant updatedAt, String updatedBy) {
+                      Instant createdAt, Instant updatedAt, int updatedBy) {
 }
