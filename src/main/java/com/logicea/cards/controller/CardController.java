@@ -6,6 +6,7 @@ import com.logicea.cards.dto.CardDto;
 import com.logicea.cards.service.CardService;
 import jakarta.validation.Valid;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,37 +23,38 @@ public class CardController {
     }
 
     @GetMapping
-
+    @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public List<CardDto> getAll() {
+        System.out.println("inside getAll CardController");
         return cardService.getAll();
     }
 
     @GetMapping("/{cardId}")
-
+    @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public CardDto getById(@PathVariable int cardId) throws CardNotFoundException {
         return cardService.getById(cardId);
     }
 
     @PostMapping
-
+    @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public CardDto newCard(@Valid @RequestBody CardDto newCardDto) {
         return cardService.newCard(newCardDto);
     }
 
     @PutMapping("/{id}")
-
+    @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public CardDto replaceCard(@Valid @RequestBody CardDto newCardDto, @PathVariable int id) throws CardNotFoundException {
         return cardService.replaceCard(newCardDto, id);
     }
 
     @PatchMapping("/{id}")
-
+    @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public CardDto partialUpdateCard(@Valid @RequestBody CardDto updates, @PathVariable int id) throws CardNotFoundException {
         return cardService.partialUpdateCard(updates, id);
     }
 
     @DeleteMapping("/{id}")
-
+    @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public void deleteCard(@PathVariable int id) throws CardNotFoundException {
         cardService.deleteCard(id);
     }
