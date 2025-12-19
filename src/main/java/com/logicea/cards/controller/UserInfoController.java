@@ -19,8 +19,8 @@ public class UserInfoController {
 
     @PostMapping("/register")
     public ResponseEntity<String> createUserInfo(@RequestBody UserInfoDto userInfoDto) {
-        UserInfoDto userInfoDto1= userInfoService.createUser(userInfoDto);
-        return new ResponseEntity<>("User "+userInfoDto1.email()+
+        UserInfoDto userInfoDto1 = userInfoService.createUser(userInfoDto);
+        return new ResponseEntity<>("User " + userInfoDto1.email() +
                 "is registered successfully", HttpStatus.CREATED);
     }
 }
