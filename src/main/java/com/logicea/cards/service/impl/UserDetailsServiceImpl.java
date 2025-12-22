@@ -1,8 +1,8 @@
 package com.logicea.cards.service.impl;
 
-import com.logicea.cards.entity.UserInfo;
-import com.logicea.cards.mapper.UserInfoUserDetailsMapper;
-import com.logicea.cards.repository.UserInfoRepository;
+import com.logicea.cards.entity.User;
+import com.logicea.cards.mapper.UserDetailsMapper;
+import com.logicea.cards.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,12 +14,12 @@ import java.util.Optional;
 
 public class UserInfoUserDetailsServiceImpl implements UserDetailsService {
     @Autowired
-    private UserInfoRepository userInfoRepository;
+    private UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<UserInfo> userInfo=userInfoRepository.findByEmail(email);
-        return userInfo.map(UserInfoUserDetailsMapper::new)
+        Optional<User> userInfo= userRepository.findByEmail(email);
+        return userInfo.map(UserDetailsMapper::new)
                 .orElseThrow(() -> new UsernameNotFoundException("User "+ email+" not found"));
     }
 

@@ -1,7 +1,5 @@
 package com.logicea.cards.controller;
-
 import com.logicea.cards.dto.UserInfoDto;
-import com.logicea.cards.entity.UserInfo;
 import com.logicea.cards.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +19,6 @@ public class UserInfoController {
     public ResponseEntity<String> createUserInfo(@RequestBody UserInfoDto userInfoDto) {
         UserInfoDto userInfoDto1 = userInfoService.createUser(userInfoDto);
         return new ResponseEntity<>("User " + userInfoDto1.email() +
-                "is registered successfully", HttpStatus.CREATED);
+                " is registered successfully", HttpStatus.CREATED);
     }
 }

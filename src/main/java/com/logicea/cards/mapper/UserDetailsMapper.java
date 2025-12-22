@@ -1,6 +1,6 @@
 package com.logicea.cards.mapper;
 
-import com.logicea.cards.entity.UserInfo;
+import com.logicea.cards.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,12 +15,12 @@ public class UserInfoUserDetailsMapper implements UserDetails {
    private String password;
    private String role;
 
-   public UserInfoUserDetailsMapper (UserInfo userInfo) {
-       this.userName = userInfo.getName();
-       this.email = userInfo.getEmail();
-       this.password = userInfo.getPassword();
-       this.role=userInfo.getRole().toString();
-       this.userId=userInfo.getUserId();
+   public UserInfoUserDetailsMapper (User user) {
+       this.userName = user.getName();
+       this.email = user.getEmail();
+       this.password = user.getPassword();
+       this.role= user.getRole().toString();
+       this.userId= user.getUserId();
 
    }
     public int getUserId() { return userId; }
