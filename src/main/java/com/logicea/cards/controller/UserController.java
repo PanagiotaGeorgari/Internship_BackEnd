@@ -1,6 +1,6 @@
 package com.logicea.cards.controller;
-import com.logicea.cards.dto.UserInfoDto;
-import com.logicea.cards.service.UserInfoService;
+import com.logicea.cards.dto.UserDto;
+import com.logicea.cards.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/user-info")
-public class UserInfoController {
+public class UserController {
     @Autowired
-    UserInfoService userInfoService;
+    UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> createUserInfo(@RequestBody UserInfoDto userInfoDto) {
-        UserInfoDto userInfoDto1 = userInfoService.createUser(userInfoDto);
-        return new ResponseEntity<>("User " + userInfoDto1.email() +
+    public ResponseEntity<String> createUserInfo(@RequestBody UserDto userDto) {
+        UserDto userDtonew = userService.createUser(userDto);
+        return new ResponseEntity<>("User " + userDtonew.email() +
                 " is registered successfully", HttpStatus.CREATED);
     }
 }
