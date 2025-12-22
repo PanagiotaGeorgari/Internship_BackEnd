@@ -3,13 +3,16 @@ package com.logicea.cards.controller;
 import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
+import com.logicea.cards.entity.Card;
 import com.logicea.cards.service.CardService;
 import jakarta.validation.Valid;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cards")
@@ -17,7 +20,7 @@ public class CardController {
 
     private final CardService cardService;
 
-    // Dependency Injection μέσω Constructor
+
     public CardController(CardService cardService) {
         this.cardService = cardService;
     }
@@ -25,13 +28,12 @@ public class CardController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public List<CardDto> getAll() {
-        System.out.println("inside getAll CardController");
         return cardService.getAll();
     }
 
     @GetMapping("/{cardId}")
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
-    public CardDto getById(@PathVariable int cardId) throws CardNotFoundException {
+    public Optional<Card> getById(@PathVariable int cardId) throws CardNotFoundException, AccessDeniedException {
         return cardService.getById(cardId);
     }
 
