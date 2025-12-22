@@ -9,13 +9,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Optional;
 
 
-public interface CardService {
+public interface CardService  {
 
     List<CardDto> getAll();
-    CardDto getById(@PathVariable int cardId) throws CardNotFoundException ;
+    Optional<Card> getById(@PathVariable int cardId) throws CardNotFoundException, AccessDeniedException;
     CardDto newCard(@Valid @RequestBody CardDto newCard);
     CardDto replaceCard(@Valid @RequestBody CardDto newCard, @PathVariable int id) throws CardNotFoundException;
     CardDto partialUpdateCard(@Valid @RequestBody CardDto updates, @PathVariable int id) throws CardNotFoundException;
