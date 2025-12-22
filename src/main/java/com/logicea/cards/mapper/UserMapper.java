@@ -3,7 +3,8 @@ package com.logicea.cards.mapper;
 import com.logicea.cards.dto.UserDto;
 import com.logicea.cards.entity.User;
 
-public class UserInfoMapper {
+public class UserMapper {
+
     public static UserDto toDto (User user) {
         return new UserDto(user.getUserId(), user.getEmail(), user.getName(),
                 user.getRole(), user.getPassword());

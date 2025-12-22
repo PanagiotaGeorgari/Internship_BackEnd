@@ -8,14 +8,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-public class UserInfoUserDetailsMapper implements UserDetails {
+public class UserDetailsMapper implements UserDetails {
    private int userId;
     private String userName;
    private String email;
    private String password;
    private String role;
 
-   public UserInfoUserDetailsMapper (User user) {
+   public UserDetailsMapper(User user) {
        this.userName = user.getName();
        this.email = user.getEmail();
        this.password = user.getPassword();
@@ -23,7 +23,9 @@ public class UserInfoUserDetailsMapper implements UserDetails {
        this.userId= user.getUserId();
 
    }
+
     public int getUserId() { return userId; }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
