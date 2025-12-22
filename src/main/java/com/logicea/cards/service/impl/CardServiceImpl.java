@@ -12,15 +12,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.security.access.AccessDeniedException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class CardServiceImpl implements CardService {
+@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Access Denied")
+public class CardServiceImpl implements CardService  {
 
     private final CardRepository cardRepository;
 
@@ -43,11 +47,27 @@ public class CardServiceImpl implements CardService {
 
 
     @Override
-    public CardDto getById(int id) throws CardNotFoundException {
+    public Optional<Card> getById(int id) throws CardNotFoundException, AccessDeniedException {
+
         UserInfoUserDetailsMapper user = getCurrentUser();
-        Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new CardNotFoundException(id));
-        return CardMapper.toDto(card);
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if(cardRepository.findById(id).isPresent()) {
+            if (isAdmin) {
+                return cardRepository.findById(id);
+            } else {
+                Optional<Card> card = cardRepository.findById(id);
+                if (card.stream().findFirst().get().getCreatedBy()== user.getUserId()) {
+                    return card;
+                } else {
+                    throw new AccessDeniedException("You do not have permission to access this resource");
+                }
+            }
+        }
+        else {
+            throw new CardNotFoundException(id);
+        }
+
     }
 
 
