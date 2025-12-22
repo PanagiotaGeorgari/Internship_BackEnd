@@ -5,17 +5,15 @@ import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.mapper.CardMapper;
-import com.logicea.cards.mapper.UserInfoUserDetailsMapper;
+import com.logicea.cards.mapper.UserDetailsMapper;
 import com.logicea.cards.repository.CardRepository;
 import com.logicea.cards.service.CardService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.security.access.AccessDeniedException;
 import java.time.Instant;
 import java.util.List;
@@ -23,7 +21,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Access Denied")
 public class CardServiceImpl implements CardService  {
 
     private final CardRepository cardRepository;
@@ -31,10 +28,10 @@ public class CardServiceImpl implements CardService  {
     public CardServiceImpl(CardRepository repository) {
         this.cardRepository = repository;
     }
+
     @Override
     public List<CardDto> getAll() {
-        System.out.println("inside getAll CardServiceImpl");
-        UserInfoUserDetailsMapper user = getCurrentUser();
+        UserDetailsMapper user = getCurrentUser();
         boolean isAdmin = user.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         return cardRepository.findAll().stream()
@@ -49,7 +46,7 @@ public class CardServiceImpl implements CardService  {
     @Override
     public Optional<Card> getById(int id) throws CardNotFoundException, AccessDeniedException {
 
-        UserInfoUserDetailsMapper user = getCurrentUser();
+        UserDetailsMapper user = getCurrentUser();
         boolean isAdmin = user.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if(cardRepository.findById(id).isPresent()) {
@@ -75,7 +72,7 @@ public class CardServiceImpl implements CardService  {
     @Override
     public CardDto newCard(CardDto cardDto) {
         System.out.println("inside newCard CardServiceImpl");
-        UserInfoUserDetailsMapper user = getCurrentUser();
+        UserDetailsMapper user = getCurrentUser();
         int userId = user.getUserId();
         Card card = CardMapper.toEntity(cardDto);
         card.setCreatedBy(user.getUserId());
@@ -135,8 +132,8 @@ public class CardServiceImpl implements CardService  {
 
         return new PaginationResponse<>(page, size, sort, result.getTotalPages(), dtos);
     }
-    private UserInfoUserDetailsMapper getCurrentUser() {
-        return (UserInfoUserDetailsMapper) SecurityContextHolder.getContext(
+    private UserDetailsMapper getCurrentUser() {
+        return (UserDetailsMapper) SecurityContextHolder.getContext(
         ).getAuthentication().getPrincipal();
     }
 

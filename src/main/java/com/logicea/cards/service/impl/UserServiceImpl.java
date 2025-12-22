@@ -4,18 +4,18 @@ import com.logicea.cards.dto.UserDto;
 import com.logicea.cards.entity.User;
 import com.logicea.cards.mapper.UserMapper;
 import com.logicea.cards.repository.UserRepository;
-import com.logicea.cards.service.UserInfoService;
+import com.logicea.cards.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserInfoServiceImpl implements UserInfoService {
+public class UserServiceImpl implements UserService {
 
     private UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     @Autowired
-    public UserInfoServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -24,7 +24,6 @@ public class UserInfoServiceImpl implements UserInfoService {
     public UserDto createUser(UserDto userDto) {
         User user = UserMapper.toEntity(userDto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        System.out.println(user.getPassword());
         userRepository.save(user);
         return UserMapper.toDto(user);
     }
