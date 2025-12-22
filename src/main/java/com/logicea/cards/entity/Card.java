@@ -17,17 +17,15 @@ public class Card {
     @Column(name = "card_id")
     private int cardId;
 
-    @NotBlank(message = "name field is mandatory")
-    @Size(min = 2, max = 50, message = "is between 2 - 50 characters")
     private String name;
 
-    @Size(max = 255, message = "description can not be over 255 chars")
+
     private String description;
 
-    @Pattern(regexp = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$|^$", message = "Invalid format of color e.g #ABC123")
+
     private String color;
 
-    @NotNull(message = "status can not be empty")
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private CardStatus status=CardStatus.TODO;
