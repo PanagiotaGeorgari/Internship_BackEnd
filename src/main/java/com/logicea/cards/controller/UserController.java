@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/user-info")
 public class UserController {
@@ -16,9 +20,13 @@ public class UserController {
     UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> createUserInfo(@RequestBody UserDto userDto) {
+    public ResponseEntity<Map<String, String>> createUserInfo(@RequestBody UserDto userDto) {
         UserDto userDtonew = userService.createUser(userDto);
-        return new ResponseEntity<>("User " + userDtonew.email() +
-                " is registered successfully", HttpStatus.CREATED);
+        String rawToken = userDtonew.email() + ":" +userDto.password();
+        String encodedToken = Base64.getEncoder().encodeToString(rawToken.getBytes());
+        Map<String, String> response = new HashMap<>();
+        response.put("token", encodedToken);
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
