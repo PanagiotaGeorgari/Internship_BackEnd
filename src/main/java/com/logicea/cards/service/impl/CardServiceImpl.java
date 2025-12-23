@@ -66,12 +66,103 @@ public class CardServiceImpl implements CardService  {
         }
 
     }
+    @Override
+    public void deleteCard(int id) throws CardNotFoundException {
+        if (!cardRepository.existsById(id)) { //if cardId does  not exist
+            throw new CardNotFoundException(id);
+        }else{
+            UserDetailsMapper user = getCurrentUser(); //take the user who tries to connect
+            boolean isAdmin = user.getAuthorities().stream() //take  user's role
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            if (isAdmin) { //if is admin then he can delete
+                cardRepository.deleteById(id);
+            }
+            else{
+                Card  card = cardRepository.findById(id).get();
+                if(user.getUserId()==card.getCreatedBy()){ //check if card belongs to user
+                    cardRepository.deleteById(id);
+                }
+                else{
+                    throw new AccessDeniedException("You do not have permission to access this resource"); //error 403
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public CardDto replaceCard(CardDto newCardDto, int id) throws CardNotFoundException {
+        if (!cardRepository.existsById(id)) { //if cardId does  not exist
+            throw new CardNotFoundException(id);
+        } else {
+            UserDetailsMapper user = getCurrentUser();//take user
+            boolean isAdmin = user.getAuthorities().stream() //take user's role
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            Card card = cardRepository.findById(id).get();
+            if (isAdmin) { //if is admin he can update any card
+                card.setName(newCardDto.name());
+                card.setDescription(newCardDto.description());
+                card.setColor(newCardDto.color());
+                card.setStatus(newCardDto.status());
+                card.setUpdatedBy(user.getUserId());
+                card.setUpdatedAt(Instant.now());
+                Card updatedCard = cardRepository.save(card);
+                return CardMapper.toDto(updatedCard);
+            } else { //if user is member
+                if (card.getCreatedBy() == user.getUserId()) { //check if card belongs  to user
+                    card.setName(newCardDto.name());
+                    card.setDescription(newCardDto.description());
+                    card.setColor(newCardDto.color());
+                    card.setStatus(newCardDto.status());
+                    card.setUpdatedBy(user.getUserId());
+                    card.setUpdatedAt(Instant.now());
+                    Card updatedCard = cardRepository.save(card);
+                    return CardMapper.toDto(updatedCard);
+                } else {
+                    throw new AccessDeniedException("You do not have permission to access this resource"); //if card doesn't belong to this user
+                }
+            }
+        }
+    }
+    @Override
+    public CardDto partialUpdateCard(CardDto updates, int id) throws CardNotFoundException {
+        if (!cardRepository.existsById(id)) { //if cardId does  not exist
+            throw new CardNotFoundException(id);
+        }else{ //cardId exists
+            UserDetailsMapper user = getCurrentUser();//get connected user
+            boolean isAdmin = user.getAuthorities().stream()//get user's role
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            Card card = cardRepository.findById(id).get(); //get card which we want to update
+            if(isAdmin) { //user role is Admin
+                if (updates.name() != null) card.setName(updates.name()); //finds the updated field
+                if (updates.description() != null) card.setDescription(updates.description());
+                if (updates.color() != null) card.setColor(updates.color());
+                if (updates.status() != null) card.setStatus(updates.status());
+                card.setUpdatedBy(user.getUserId());
+                card.setUpdatedAt(Instant.now());
+                Card updatedCard = cardRepository.save(card);
+                return CardMapper.toDto(updatedCard);
+            }else{
+                if(card.getCreatedBy() == user.getUserId()){ //check if card belongs to user
+                    if (updates.name() != null) card.setName(updates.name()); //finds the updated field
+                    if (updates.description() != null) card.setDescription(updates.description());
+                    if (updates.color() != null) card.setColor(updates.color());
+                    if (updates.status() != null) card.setStatus(updates.status());
+                    card.setUpdatedBy(user.getUserId());
+                    card.setUpdatedAt(Instant.now());
+                    Card updatedCard = cardRepository.save(card);
+                    return CardMapper.toDto(updatedCard);
+                }else{
+                    throw new AccessDeniedException("You do not have permission to access this resource"); //if card doesn't belong to this user
+                }
+            }
+        }
+    }
 
 
 
     @Override
     public CardDto newCard(CardDto cardDto) {
-        System.out.println("inside newCard CardServiceImpl");
         UserDetailsMapper user = getCurrentUser();
         int userId = user.getUserId();
         Card card = CardMapper.toEntity(cardDto);
@@ -85,40 +176,8 @@ public class CardServiceImpl implements CardService  {
 
     }
 
-    @Override
-    public CardDto replaceCard(CardDto newCardDto, int id) throws CardNotFoundException {
-        return cardRepository.findById(id).map(card -> {
-            card.setName(newCardDto.name());
-            card.setDescription(newCardDto.description());
-            card.setColor(newCardDto.color());
-            card.setStatus(newCardDto.status());
 
-            Card updatedCard = cardRepository.save(card);
-            return CardMapper.toDto(updatedCard);
-        }).orElseThrow(() -> new CardNotFoundException(id));
-    }
 
-    @Override
-    public CardDto partialUpdateCard(CardDto updates, int id) throws CardNotFoundException {
-        Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new CardNotFoundException(id));
-
-        if (updates.name() != null) card.setName(updates.name());
-        if (updates.description() != null) card.setDescription(updates.description());
-        if (updates.color() != null) card.setColor(updates.color());
-        if (updates.status() != null) card.setStatus(updates.status());
-
-        Card savedCard = cardRepository.save(card);
-        return CardMapper.toDto(savedCard);
-    }
-
-    @Override
-    public void deleteCard(int id) throws CardNotFoundException {
-        if (!cardRepository.existsById(id)) {
-            throw new CardNotFoundException(id);
-        }
-        cardRepository.deleteById(id);
-    }
 
     @Override
     public PaginationResponse<CardDto> getCardsPagination(int page, int size, String sort) {
