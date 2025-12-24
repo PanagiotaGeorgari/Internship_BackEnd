@@ -1,5 +1,6 @@
 package com.logicea.cards.controller;
 import com.logicea.cards.dto.UserDto;
+import com.logicea.cards.entity.User;
 import com.logicea.cards.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,13 +21,18 @@ public class UserController {
     UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> createUserInfo(@RequestBody UserDto userDto) {
-        UserDto userDtonew = userService.createUser(userDto);
-        String rawToken = userDtonew.email() + ":" +userDto.password();
+    public ResponseEntity<UserDto> createUserInfo(@RequestBody UserDto userDto) {
+        UserDto newUser = userService.createUser(userDto);
+        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+    }
+    @PostMapping("/token")
+    public ResponseEntity<Map<String,String>> authenticate(@RequestBody Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+        String rawToken = email + ":" + password;
         String encodedToken = Base64.getEncoder().encodeToString(rawToken.getBytes());
         Map<String, String> response = new HashMap<>();
         response.put("token", encodedToken);
-
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ResponseEntity.ok(response);
     }
 }
