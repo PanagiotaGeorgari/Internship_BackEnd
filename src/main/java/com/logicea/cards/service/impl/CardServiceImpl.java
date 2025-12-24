@@ -49,7 +49,9 @@ public class CardServiceImpl implements CardService  {
         UserDetailsMapper user = getCurrentUser();
         boolean isAdmin = user.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if(cardRepository.findById(id).isPresent()) {
+        if (!cardRepository.findById(id).isPresent()) {
+            throw new CardNotFoundException(id);
+        }
             if (isAdmin) {
                 return cardRepository.findById(id);
             } else {
@@ -60,10 +62,6 @@ public class CardServiceImpl implements CardService  {
                     throw new AccessDeniedException("You do not have permission to access this resource");
                 }
             }
-        }
-        else {
-            throw new CardNotFoundException(id);
-        }
 
     }
     @Override
