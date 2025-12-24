@@ -10,7 +10,7 @@ import java.util.List;
 
 public class UserDetailsMapper implements UserDetails {
    private int userId;
-    private String userName;
+   private String userName;
    private String email;
    private String password;
    private String role;
