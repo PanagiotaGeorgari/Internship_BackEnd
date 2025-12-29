@@ -27,7 +27,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = request.getHeader("Authorization");
-        String path = String.valueOf(request.getRequestURL());
+
+        String path = request.getServletPath();
         if (path.equals("/user-info/register") || path.equals("/user-info/token")) {
             filterChain.doFilter(request, response);
             return;
