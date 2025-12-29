@@ -27,8 +27,13 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = request.getHeader("Authorization");
-
+        String path = String.valueOf(request.getRequestURL());
+        if (path.equals("/user-info/register") || path.equals("/user-info/token")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         if (token != null && !token.isEmpty()) {
+            try{
 
                 String decoded = new String(Base64.getDecoder().decode(token));//decode the token
                 String[] token_decoded = decoded.split(":");
@@ -44,8 +49,27 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                         SecurityContextHolder.getContext().setAuthentication(auth); // updates spring that user is authenticated
                     }
+                    else{
+                        sendUnauthorized(response, "Invalid username or password");
+                        return;
+                    }
                 }
-        }
-        filterChain.doFilter(request, response);
+            }
+            catch (Exception e){
+                sendUnauthorized(response, "Invalid tokens!");
+                return; }
+            }
+
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                sendUnauthorized(response, "Unauthorized access.(Token is missing !");
+                return;
+            }
+
+            filterChain.doFilter(request, response);
+    }
+    private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"" + message + "\"}");
     }
 }
