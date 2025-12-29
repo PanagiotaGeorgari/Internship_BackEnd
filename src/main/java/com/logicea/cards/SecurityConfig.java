@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user-info/register", "/user-info/token").permitAll()//fr this urls there is not any authentication
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated() // any other request needs authentication
                 )
                 .addFilterBefore(tokenAuthenticationFilter(), //before any other filter we use tokenAuthenticationFilter()
