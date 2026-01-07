@@ -12,14 +12,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userId;
 
+    @Column(name = "email")
     private String email;
 
+    @Column(name = "name")
     private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private UserRole role;
 
+    @Column(name = "password")
     private String password;
 
 
