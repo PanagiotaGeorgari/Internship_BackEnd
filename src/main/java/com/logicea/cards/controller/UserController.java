@@ -1,6 +1,8 @@
 package com.logicea.cards.controller;
 import com.logicea.cards.dto.UserDto;
 import com.logicea.cards.dto.LogInDto;
+import com.logicea.cards.entity.User;
+import com.logicea.cards.mapper.UserMapper;
 import com.logicea.cards.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +25,10 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> createUserInfo(@RequestBody UserDto userDto) {
-        UserDto newUser = userService.createUser(userDto);
-        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+        User user = UserMapper.toEntity(userDto);
+        User newUser = userService.createUser(user);
+        UserDto responseDto = UserMapper.toDto(newUser);
+        return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
     @PostMapping("/token")
     public ResponseEntity<Map<String,String>> authenticate(@Valid @RequestBody LogInDto login) {
