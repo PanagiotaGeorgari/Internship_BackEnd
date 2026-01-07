@@ -7,6 +7,7 @@ import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
 import com.logicea.cards.enums.UserRole;
 import com.logicea.cards.mapper.CardMapper;
+import com.logicea.cards.repository.AssocRepository;
 import com.logicea.cards.repository.CardRepository;
 import com.logicea.cards.service.CardService;
 import org.springframework.data.domain.Page;
@@ -25,9 +26,11 @@ import java.util.stream.Collectors;
 public class CardServiceImpl implements CardService  {
 
     private final CardRepository cardRepository;
+    private final AssocRepository assocRepository;
 
-    public CardServiceImpl(CardRepository repository) {
+    public CardServiceImpl(CardRepository repository, AssocRepository assocRepository) {
         this.cardRepository = repository;
+        this.assocRepository = assocRepository;
     }
 
     /*@Override
@@ -59,8 +62,10 @@ public class CardServiceImpl implements CardService  {
             throw new CardNotFoundException(id);
         }
             if (isAdmin) {
-                return card;
-            } else {
+                return cardRepository.findById(id);
+                //new method for chapter 4
+                //assocRepository.findByRcardId(id).
+            }else {
 
                 if (card.get().getCreatedBy()== user.getUserId()) {
                     return card;

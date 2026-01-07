@@ -23,13 +23,4 @@ public class CardMapper {
         return card;
     }
 
-    /*public static void updateEntityFromDto(CardDto dto, Card entity) {
-        if (dto == null) return;
-        if (dto.name() != null) entity.setName(dto.name());
-        if (dto.description() != null) entity.setDescription(dto.description());
-        if (dto.color() != null) entity.setColor(dto.color());
-        if (dto.status() != null) entity.setStatus(dto.status());
-        if (dto.createdBy() != 0) entity.setCreatedBy(dto.createdBy());
-
-    }*/
 }
