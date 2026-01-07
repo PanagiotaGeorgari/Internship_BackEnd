@@ -24,11 +24,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserDto createUser(UserDto userDto) {
-        User user = UserMapper.toEntity(userDto);
+    public User createUser(User user) {
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return UserMapper.toDto(user);
+        return userRepository.save(user);
+
     }
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
