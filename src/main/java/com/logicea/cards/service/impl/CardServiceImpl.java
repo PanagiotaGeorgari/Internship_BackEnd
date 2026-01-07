@@ -5,6 +5,7 @@ import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
+import com.logicea.cards.enums.UserRole;
 import com.logicea.cards.mapper.CardMapper;
 import com.logicea.cards.repository.CardRepository;
 import com.logicea.cards.service.CardService;
@@ -32,8 +33,7 @@ public class CardServiceImpl implements CardService  {
     @Override
     public List<CardDto> getAll() {
         User user = getCurrentUser();
-        boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
         List<Card> cards;
         if(isAdmin){
             cards = cardRepository.findAll();
@@ -53,8 +53,7 @@ public class CardServiceImpl implements CardService  {
     public Optional<Card> getById(int id) throws CardNotFoundException, AccessDeniedException {
 
         User user = getCurrentUser();
-        boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
         Optional<Card> card =cardRepository.findById(id);
         if (!card.isPresent()) {
             throw new CardNotFoundException(id);
@@ -78,8 +77,7 @@ public class CardServiceImpl implements CardService  {
             throw new CardNotFoundException(id);
         }else{
             User user = getCurrentUser(); //take the user who tries to connect
-            boolean isAdmin = user.getAuthorities().stream() //take  user's role
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            boolean isAdmin = user.getRole() == UserRole.ADMIN;
             if (isAdmin) { //if is admin then he can delete
                 cardRepository.deleteById(id);
             }
@@ -104,8 +102,7 @@ public class CardServiceImpl implements CardService  {
             throw new CardNotFoundException(id);
         } else {
             User user = getCurrentUser();//take user
-            boolean isAdmin = user.getAuthorities().stream() //take user's role
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            boolean isAdmin = user.getRole() == UserRole.ADMIN;
             if (isAdmin) { //if is admin he can update any card
                 cardObject.setName(newCardDto.name());
                 cardObject.setDescription(newCardDto.description());
@@ -140,8 +137,7 @@ public class CardServiceImpl implements CardService  {
             throw new CardNotFoundException(id);
         }else{ //cardId exists
             User user = getCurrentUser();//get connected user
-            boolean isAdmin = user.getAuthorities().stream()//get user's role
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            boolean isAdmin = user.getRole() == UserRole.ADMIN;
             if(isAdmin) { //user role is Admin
                 if (updates.name() != null) cardObject.setName(updates.name()); //finds the updated field
                 if (updates.description() != null) cardObject.setDescription(updates.description());
