@@ -25,8 +25,13 @@ public class CardController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
-    public List<CardDto> getAll() {
-        return cardService.getAll();
+    public PaginationResponse<CardDto> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "cardId") String sort)
+    {
+
+        return cardService.getCardsPagination(page, size, sort);
     }
 
     @GetMapping("/{cardId}")
@@ -59,11 +64,4 @@ public class CardController {
         cardService.deleteCard(id);
     }
 
-    @GetMapping("/page")
-    public PaginationResponse<CardDto> getCardsPagination(
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "5") int size,
-            @RequestParam(name = "sort", defaultValue = "cardId") String sort) {
-        return cardService.getCardsPagination(page, size, sort);
-    }
 }
