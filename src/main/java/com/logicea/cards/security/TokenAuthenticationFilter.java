@@ -37,12 +37,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             try{
 
                 String decoded = new String(Base64.getDecoder().decode(token));//decode the token
-                String[] token_decoded = decoded.split(":");
+                String[] tokenDecoded = decoded.split(":");
 
 
-                if (token_decoded.length == 2) { // we have 2 parts email:password
-                    String email = token_decoded[0];
-                    String rawPassword = token_decoded[1];
+                if (tokenDecoded.length == 2) { // we have 2 parts email:password
+                    String email = tokenDecoded[0];
+                    String rawPassword = tokenDecoded[1];
 
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email); //load user from the base
 
