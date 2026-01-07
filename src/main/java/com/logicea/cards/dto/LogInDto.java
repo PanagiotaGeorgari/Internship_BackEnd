@@ -1,9 +1,8 @@
 package com.logicea.cards.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public record logIn(
+public record LogInDto(
         @NotBlank(message = "Email is required")
         String email,
         @NotBlank(message = "Password is required")
