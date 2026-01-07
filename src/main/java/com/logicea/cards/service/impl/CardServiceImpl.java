@@ -4,8 +4,8 @@ import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
 import com.logicea.cards.entity.Card;
+import com.logicea.cards.entity.User;
 import com.logicea.cards.mapper.CardMapper;
-import com.logicea.cards.mapper.UserDetailsMapper;
 import com.logicea.cards.repository.CardRepository;
 import com.logicea.cards.service.CardService;
 import org.springframework.data.domain.Page;
@@ -31,7 +31,7 @@ public class CardServiceImpl implements CardService  {
 
     @Override
     public List<CardDto> getAll() {
-        UserDetailsMapper user = getCurrentUser();
+        User user = getCurrentUser();
         boolean isAdmin = user.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         return cardRepository.findAll().stream()
@@ -46,7 +46,7 @@ public class CardServiceImpl implements CardService  {
     @Override
     public Optional<Card> getById(int id) throws CardNotFoundException, AccessDeniedException {
 
-        UserDetailsMapper user = getCurrentUser();
+        User user = getCurrentUser();
         boolean isAdmin = user.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if (!cardRepository.findById(id).isPresent()) {
@@ -69,7 +69,7 @@ public class CardServiceImpl implements CardService  {
         if (!cardRepository.existsById(id)) { //if cardId does  not exist
             throw new CardNotFoundException(id);
         }else{
-            UserDetailsMapper user = getCurrentUser(); //take the user who tries to connect
+            User user = getCurrentUser(); //take the user who tries to connect
             boolean isAdmin = user.getAuthorities().stream() //take  user's role
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
             if (isAdmin) { //if is admin then he can delete
@@ -93,7 +93,7 @@ public class CardServiceImpl implements CardService  {
         if (!cardRepository.existsById(id)) { //if cardId does  not exist
             throw new CardNotFoundException(id);
         } else {
-            UserDetailsMapper user = getCurrentUser();//take user
+            User user = getCurrentUser();//take user
             boolean isAdmin = user.getAuthorities().stream() //take user's role
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
             Card card = cardRepository.findById(id).get();
@@ -127,7 +127,7 @@ public class CardServiceImpl implements CardService  {
         if (!cardRepository.existsById(id)) { //if cardId does  not exist
             throw new CardNotFoundException(id);
         }else{ //cardId exists
-            UserDetailsMapper user = getCurrentUser();//get connected user
+            User user = getCurrentUser();//get connected user
             boolean isAdmin = user.getAuthorities().stream()//get user's role
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
             Card card = cardRepository.findById(id).get(); //get card which we want to update
@@ -161,7 +161,7 @@ public class CardServiceImpl implements CardService  {
 
     @Override
     public CardDto newCard(CardDto cardDto) {
-        UserDetailsMapper user = getCurrentUser();
+        User user = getCurrentUser();
         int userId = user.getUserId();
         Card card = CardMapper.toEntity(cardDto);
         card.setCreatedBy(user.getUserId());
@@ -189,8 +189,8 @@ public class CardServiceImpl implements CardService  {
 
         return new PaginationResponse<>(page, size, sort, result.getTotalPages(), dtos);
     }
-    private UserDetailsMapper getCurrentUser() {
-        return (UserDetailsMapper) SecurityContextHolder.getContext(
+    private User getCurrentUser() {
+        return (User) SecurityContextHolder.getContext(
         ).getAuthentication().getPrincipal();
     }
 
