@@ -1,6 +1,8 @@
 package com.logicea.cards.repository;
 import com.logicea.cards.entity.Card;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -10,5 +12,5 @@ import java.util.List;
 //Integer is the type of the primary key
 
 public interface  CardRepository extends JpaRepository<Card,Integer> {
-    List<Card> findByCreatedBy(int userId);
+    Page<Card> findByCreatedBy(int userId, Pageable pageable);
 }

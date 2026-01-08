@@ -30,7 +30,7 @@ public class CardServiceImpl implements CardService  {
         this.cardRepository = repository;
     }
 
-    @Override
+    /*@Override
     public List<CardDto> getAll() {
         User user = getCurrentUser();
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
@@ -44,7 +44,7 @@ public class CardServiceImpl implements CardService  {
                 .map(CardMapper::toDto)
                 .collect(Collectors.toList());
 
-    }
+    }*/
 
 
 
@@ -186,15 +186,22 @@ public class CardServiceImpl implements CardService  {
 
     @Override
     public PaginationResponse<CardDto> getCardsPagination(int page, int size, String sort) {
+        User user = getCurrentUser();
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sort));
-        Page<Card> result = cardRepository.findAll(pageable);
+        Page<Card> cardPage;
+        if (isAdmin) {
+            cardPage = cardRepository.findAll(pageable);
+        }else{
+            cardPage = cardRepository.findByCreatedBy(user.getUserId(), pageable);
+        }
 
 
-        List<CardDto> dtos = result.getContent().stream()
+        List<CardDto> dtos = cardPage.getContent().stream()
                 .map(CardMapper::toDto)
                 .collect(Collectors.toList());
 
-        return new PaginationResponse<>(page, size, sort, result.getTotalPages(), dtos);
+        return new PaginationResponse<>(page, size, sort, cardPage.getTotalPages(), dtos);
     }
     private User getCurrentUser() {
         return (User) SecurityContextHolder.getContext(
