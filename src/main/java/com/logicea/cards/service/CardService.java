@@ -16,7 +16,7 @@ import java.util.Optional;
 
 public interface CardService  {
 
-    List<CardDto> getAll();
+    //List<CardDto> getAll();
     Optional<Card> getById(@PathVariable int cardId) throws CardNotFoundException, AccessDeniedException;
     CardDto newCard(@Valid @RequestBody CardDto newCard);
     CardDto replaceCard(@Valid @RequestBody CardDto newCard, @PathVariable int id) throws CardNotFoundException;
