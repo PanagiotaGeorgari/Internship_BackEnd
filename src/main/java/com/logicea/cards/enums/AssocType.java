@@ -1,11 +1,11 @@
 package com.logicea.cards.enums;
 
-public enum Assoc {
+public enum AssocType {
     BLOCKS,
     CHILD_OF,
     BLOCKED_BY,
     PARENT_OF;
-    public Assoc getInverseAssoc(){
+    public AssocType getInverseAssoc(){
         return switch (this){
             case BLOCKS -> BLOCKED_BY;
             case CHILD_OF -> PARENT_OF;
