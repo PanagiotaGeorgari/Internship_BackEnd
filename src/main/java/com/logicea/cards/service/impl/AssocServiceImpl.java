@@ -6,6 +6,7 @@ import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.dto.AssocDto;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
+import com.logicea.cards.enums.AssocType;
 import com.logicea.cards.mapper.UserDetailsMapper;
 import com.logicea.cards.repository.AssocRepository;
 import com.logicea.cards.repository.CardRepository;
@@ -37,63 +38,55 @@ public class AssocServiceImpl implements AssocService {
         Card rcard = cardRepository.findById(assocDto.rcardId())
                 .orElseThrow(() -> new CardNotFoundException(assocDto.rcardId()));
         UserDetailsMapper user = getCurrentUser();//take user
-        boolean isAdmin = user.getAuthorities().stream() //take user's role
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        boolean valid;
-        if(!assocRepository.findByRcardId(assocDto.rcardId()).isPresent() & !assocRepository.findByLcardId(assocDto.lcardId()).isPresent()) {
-            if (isAdmin) { //if is admin he can update any card
-                valid = true;
 
-            } else {
-                boolean ownsLeftCard = lcard.getCreatedBy() == user.getUserId();
-                boolean ownsRightCard = rcard.getCreatedBy() == user.getUserId();
-                System.out.println("member newAssoc");
-                if (!ownsLeftCard || !ownsRightCard) {
-                    valid = false;
-                    throw new AccessDeniedException("Can not associate cards with different users!");
-                }
-                valid = true;
-            }
+        if(!validateOwner(lcard,rcard,user)){
+            throw new AccessDeniedException("Members can only associate their own cards!");
         }
-        else{
-            throw new AssocAlreadyExistsException("This association already exists!");
+        if(!uniqueAssoc(lcard,rcard,assocDto)){
+            throw new AssocAlreadyExistsException("These cards are already associated!");
         }
-        if(valid){
-            Assoc entity1 = new Assoc();
-            entity1.setLcardId(assocDto.lcardId());
-            entity1.setAssoc(assocDto.assoc());
-            entity1.setRcardId(assocDto.rcardId());
-            Assoc savedEntity1 = assocRepository.save(entity1);
-            Assoc entity2 = new Assoc();
-            entity2.setLcardId(assocDto.rcardId());
-            entity2.setAssoc(assocDto.assoc().getInverseAssoc());
-            entity2.setRcardId(assocDto.lcardId());
-            Assoc savedEntity2 = assocRepository.save(entity2);
-            System.out.println("admin newAssoc");
-            AssocDto savedentity1= new AssocDto(
-                    savedEntity1.getId(),
-                    savedEntity1.getLcardId(),
-                    savedEntity1.getAssoc(),
-                    savedEntity1.getRcardId()
-            );
-            AssocDto savedentity2 =new AssocDto(
-                    savedEntity2.getId(),
-                    savedEntity2.getLcardId(),
-                    savedEntity2.getAssoc(),
-                    savedEntity2.getRcardId()
-            );
-            List<Integer> savedIds = new ArrayList<>();
-            savedIds.add(savedEntity1.getId());
-            savedIds.add(savedEntity2.getId());
-            return savedIds;
-        }
-        else{
-            return List.of();
-        }
+
+        Assoc a1 = createAssoc(lcard.getCardId(), rcard.getCardId(), assocDto.assoc());
+        Assoc a2 = createAssoc(rcard.getCardId(), lcard.getCardId(), assocDto.assoc().getInverseAssoc());
+
+        Assoc s1 = assocRepository.save(a1);
+        Assoc s2 = assocRepository.save(a2);
+        return List.of(s1.getId(),s2.getId());
 
     }
 
 
+    public boolean validateOwner(Card lcard, Card rcard, UserDetailsMapper user) {
+        if(user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return true;
+        }
+        else{
+            boolean ownerLeftCard = lcard.getCreatedBy() == user.getUserId(); //check if cards belong to this member
+            boolean ownerRightCard = rcard.getCreatedBy() == user.getUserId();
+            System.out.println("member newAssoc");
+            if (!ownerLeftCard || !ownerRightCard) { // if cards do not belong to the same user
+                return false;
+                // throw new AccessDeniedException("Can not associate cards with different users!");
+            }
+            return true;
+        }
+    }
+    public boolean uniqueAssoc(Card lcard, Card rcard,AssocDto assocDto) {
+        if(!assocRepository.findByRcardId(assocDto.rcardId()).isPresent() &
+                !assocRepository.findByLcardId(assocDto.lcardId()).isPresent()) { // avoid duplicate
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    private Assoc createAssoc(int l, int r, AssocType type){
+        Assoc a = new Assoc();
+        a.setLcardId(l);
+        a.setRcardId(r);
+        a.setAssoc(type);
+        return a;
+    }
     public void deleteAssoc(int id){
         boolean valid;
         UserDetailsMapper user = getCurrentUser();//take user
