@@ -1,5 +1,6 @@
 package com.logicea.cards.entity;
 
+import com.logicea.cards.enums.AssocType;
 import jakarta.persistence.*;
 
 @Entity
@@ -15,12 +16,12 @@ public class Assoc {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "assoc", nullable = false)
-    private com.logicea.cards.enums.Assoc assoc;
+    private AssocType assoc;
 
     @Column(name="rcard_id")
     private int rcardId;
 
-    public Assoc(int id, int lcardId, com.logicea.cards.enums.Assoc assoc, int rcardId) {
+    public Assoc(int id, int lcardId, AssocType assoc, int rcardId) {
         this.id = id;
         this.lcardId = lcardId;
         this.assoc = assoc;
@@ -47,11 +48,11 @@ public class Assoc {
         this.lcardId = lcardId;
     }
 
-    public com.logicea.cards.enums.Assoc getAssoc() {
+    public AssocType getAssoc() {
         return assoc;
     }
 
-    public void setAssoc(com.logicea.cards.enums.Assoc assoc) {
+    public void setAssoc(AssocType assoc) {
         this.assoc = assoc;
     }
 
