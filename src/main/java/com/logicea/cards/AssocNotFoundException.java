@@ -6,5 +6,5 @@ class AssocNotFoundException extends RuntimeException {
     public AssocNotFoundException(String id) {
         super("Asooc with id " + id + " not found");
     }
-    
+
 }
