@@ -35,9 +35,15 @@ public class UserController {
         String email = login.email();
         String password = login.password();
         String rawToken = email + ":" + password;
-        String encodedToken = Base64.getEncoder().encodeToString(rawToken.getBytes());
-        Map<String, String> response = new HashMap<>();
-        response.put("token", encodedToken);
-        return ResponseEntity.ok(response);
+        if(userService.validateUser(email, password)) {
+            String encodedToken = Base64.getEncoder().encodeToString(rawToken.getBytes());
+            Map<String, String> response = new HashMap<>();
+            response.put("token", encodedToken);
+            return ResponseEntity.ok(response);
+        }
+        else{
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
     }
 }
