@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 public interface AssocService {
-    List<Integer> newAssoc(@RequestBody AssocDto newAssoc);
+    List<Integer> newAssoc(AssocDto newAssoc);
 
-    void deleteAssoc(@PathVariable int id);/*throws assocNotFoundException*/
+    void deleteAssoc(int id);
 }
