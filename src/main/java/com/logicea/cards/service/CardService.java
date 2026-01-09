@@ -17,12 +17,12 @@ import java.util.Optional;
 public interface CardService  {
 
     //List<CardDto> getAll();
-    Optional<Card> getById(@PathVariable int cardId) throws CardNotFoundException, AccessDeniedException;
-    CardDto newCard(@Valid @RequestBody CardDto newCard);
-    CardDto replaceCard(@Valid @RequestBody CardDto newCard, @PathVariable int id) throws CardNotFoundException;
-    CardDto partialUpdateCard(@Valid @RequestBody CardDto updates, @PathVariable int id) throws CardNotFoundException;
-    void deleteCard(@PathVariable int id) throws CardNotFoundException;
-    PaginationResponse<CardDto> getCardsPagination(@RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "5") int size, @RequestParam(name = "sort", defaultValue = "cardId") String sort);
+    Optional<Card> getById(int cardId) throws CardNotFoundException, AccessDeniedException;
+    CardDto newCard(CardDto newCard);
+    CardDto replaceCard( CardDto newCard, int id) throws CardNotFoundException;
+    CardDto partialUpdateCard(CardDto updates,int id) throws CardNotFoundException;
+    void deleteCard(int id) throws CardNotFoundException;
+    PaginationResponse<CardDto> getCardsPagination(int page,  int size,  String sort);
 
 
 }
