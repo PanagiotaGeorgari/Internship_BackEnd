@@ -5,7 +5,9 @@ import com.logicea.cards.enums.AssocType;
 
 public record AssocDto(
         Integer id,
-        @JsonProperty("lcardId") int lcardId,
-        @JsonProperty("assoc") AssocType assoc,
-        @JsonProperty("rcardId") int rcardId
-) {}
+        int lcardId,
+        AssocType assoc,
+        int rcardId
+) {
+
+}
