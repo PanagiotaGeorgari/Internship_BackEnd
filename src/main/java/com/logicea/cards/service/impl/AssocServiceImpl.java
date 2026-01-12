@@ -74,30 +74,17 @@ public class AssocServiceImpl implements AssocService {
     }
     public boolean uniqueAssoc(Card lcard, Card rcard,AssocType type) {
 
-       /*List<Assoc> a1 =assocRepository.findByRcardId(rcard.getCardId());
-       List<Assoc> a2 =assocRepository.findByLcardId(lcard.getCardId());
-        if (a1.isPresent() && a2.isPresent()) {
-            Assoc assoc1= a1.get();
-            Assoc assoc2= a2.get();
-            if (assoc1.getId() == assoc2.getId()) { // if card's ids are in the same line
-                AssocType assocType = assoc1.getAssoc(); // get the type of this assoc
-                if(assocType != type){ // i can to create a new assoc between
-                    return true;       // two cards which already have an assoc but now with different type
-                }else {
-                    return false;       //avoid duplicate (same cards with same type)
-                }
-            }else{
-                return true ;           // if card's ids are in different lines we can create a new assoc
-            }
-        }else{
-            return true;
-        }*/
         Optional<Assoc> existingAssoc = assocRepository.findByLcardIdAndRcardIdAndAssoc(
                 lcard.getCardId(),
                 rcard.getCardId(),
                 type
         );
-        if(existingAssoc.isPresent()){
+        Optional<Assoc> inversedexistingAssoc = assocRepository.findByLcardIdAndRcardIdAndAssoc(
+                rcard.getCardId(),
+                lcard.getCardId(),
+                type
+        );
+        if(existingAssoc.isPresent() || inversedexistingAssoc.isPresent()) {
             return false;
         }else {
             return true;
