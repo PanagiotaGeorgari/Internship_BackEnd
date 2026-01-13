@@ -6,18 +6,16 @@ import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.dto.AssocDto;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
+import com.logicea.cards.entity.User;
 import com.logicea.cards.enums.AssocType;
-import com.logicea.cards.mapper.UserDetailsMapper;
+import com.logicea.cards.enums.UserRole;
 import com.logicea.cards.repository.AssocRepository;
 import com.logicea.cards.repository.CardRepository;
 import com.logicea.cards.service.AssocService;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import org.springframework.security.access.AccessDeniedException;
-
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,18 +30,17 @@ public class AssocServiceImpl implements AssocService {
     }
 
 
-
     public List<Integer> newAssoc(AssocDto assocDto) {
         Card lcard = cardRepository.findById(assocDto.lcardId())
                 .orElseThrow(() -> new CardNotFoundException(assocDto.lcardId()));
         Card rcard = cardRepository.findById(assocDto.rcardId())
                 .orElseThrow(() -> new CardNotFoundException(assocDto.rcardId()));
-        UserDetailsMapper user = getCurrentUser();//take user
+        User user = getCurrentUser();//take user
 
-        if(!validateOwner(lcard,rcard,user)){
+        if (!validateOwner(lcard, rcard, user)) {
             throw new AccessDeniedException("Members can only associate their own cards!");
         }
-        if(!uniqueAssoc(lcard,rcard,assocDto.assoc())){
+        if (!uniqueAssoc(lcard, rcard, assocDto.assoc())) {
             throw new AssocAlreadyExistsException("These cards are already associated!");
         }
 
@@ -52,16 +49,15 @@ public class AssocServiceImpl implements AssocService {
 
         Assoc s1 = assocRepository.save(a1);
         Assoc s2 = assocRepository.save(a2);
-        return List.of(s1.getId(),s2.getId());
+        return List.of(s1.getId(), s2.getId());
 
     }
 
 
-    public boolean validateOwner(Card lcard, Card rcard, UserDetailsMapper user) {
-        if(user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+    public boolean validateOwner(Card lcard, Card rcard, User user) {
+        if (user.getRole() == UserRole.ADMIN) {
             return true;
-        }
-        else{
+        } else {
             boolean ownerLeftCard = lcard.getCreatedBy() == user.getUserId(); //check if cards belong to this member
             boolean ownerRightCard = rcard.getCreatedBy() == user.getUserId();
             System.out.println("member newAssoc");
@@ -72,7 +68,8 @@ public class AssocServiceImpl implements AssocService {
             return true;
         }
     }
-    public boolean uniqueAssoc(Card lcard, Card rcard,AssocType type) {
+
+    public boolean uniqueAssoc(Card lcard, Card rcard, AssocType type) {
 
         Optional<Assoc> existingAssoc = assocRepository.findByLcardIdAndRcardIdAndAssoc(
                 lcard.getCardId(),
@@ -84,46 +81,45 @@ public class AssocServiceImpl implements AssocService {
                 lcard.getCardId(),
                 type
         );
-        if(existingAssoc.isPresent() || inversedexistingAssoc.isPresent()) {
+        if (existingAssoc.isPresent() || inversedexistingAssoc.isPresent()) {
             return false;
-        }else {
+        } else {
             return true;
         }
 
     }
-    private Assoc createAssoc(int l, int r, AssocType type){
+
+    private Assoc createAssoc(int l, int r, AssocType type) {
         Assoc a = new Assoc();
         a.setLcardId(l);
         a.setRcardId(r);
         a.setAssoc(type);
         return a;
     }
-    public void deleteAssoc(int id){
-        boolean valid;
-        UserDetailsMapper user = getCurrentUser();//take user
-        boolean isAdmin = user.getAuthorities().stream() //take user's role
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (isAdmin){
-            valid=true;
-        }
-        else{
-            int lcardid=assocRepository.findById(id).get().getLcardId();
-            int rcardid=assocRepository.findById(id).get().getRcardId();
 
-            if (cardRepository.findById(lcardid).get().getCreatedBy()==user.getUserId() & cardRepository.findById(rcardid).get().getCreatedBy()==user.getUserId()) {
-                valid=true;
-            }
-            else{
+    public void deleteAssoc(int id) {
+        boolean valid;
+        User user = getCurrentUser();//take user
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
+        if (isAdmin) {
+            valid = true;
+        } else {
+            int lcardid = assocRepository.findById(id).get().getLcardId();
+            int rcardid = assocRepository.findById(id).get().getRcardId();
+
+            if (cardRepository.findById(lcardid).get().getCreatedBy() == user.getUserId() & cardRepository.findById(rcardid).get().getCreatedBy() == user.getUserId()) {
+                valid = true;
+            } else {
                 throw new AccessDeniedException("Can not associate cards with different users!");
             }
         }
-        if (valid){
-            int lcardid=assocRepository.findById(id).get().getLcardId();
-            int rcardid=assocRepository.findById(id).get().getRcardId();
-            Assoc assoc=getAssocByRcard(rcardid,lcardid);
-            Assoc assoc_inv=getAssocByRcard(lcardid,rcardid);
+        if (valid) {
+            int lcardid = assocRepository.findById(id).get().getLcardId();
+            int rcardid = assocRepository.findById(id).get().getRcardId();
+            Assoc assoc = getAssocByRcard(rcardid, lcardid);
+            Assoc assocInv = getAssocByRcard(lcardid, rcardid);
             assocRepository.delete(assoc);
-            assocRepository.delete(assoc_inv);
+            assocRepository.delete(assocInv);
         }
     }
 
@@ -133,12 +129,10 @@ public class AssocServiceImpl implements AssocService {
 
     }
 
-    private UserDetailsMapper getCurrentUser() {
-        return (UserDetailsMapper) SecurityContextHolder.getContext(
+    private User getCurrentUser() {
+        return (User) SecurityContextHolder.getContext(
         ).getAuthentication().getPrincipal();
     }
-
-
 
 
 }
