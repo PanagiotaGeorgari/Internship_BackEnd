@@ -4,15 +4,12 @@ import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.GetByIdResponse;
 import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
-import com.logicea.cards.entity.Card;
-import com.logicea.cards.enums.AssocType;
 import com.logicea.cards.service.CardService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.nio.file.AccessDeniedException;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cards")
@@ -30,8 +27,7 @@ public class CardController {
     public PaginationResponse<CardDto> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "cardId") String sort)
-    {
+            @RequestParam(defaultValue = "cardId") String sort) {
 
         return cardService.getCardsPagination(page, size, sort);
     }
