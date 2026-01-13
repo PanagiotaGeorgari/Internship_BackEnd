@@ -11,5 +11,6 @@ public record AssocDto(
         Integer rcardId,
         AssocType assoc,
         CardSummaryDto card // infos for the other card
-) {}
+) {
+}
 
