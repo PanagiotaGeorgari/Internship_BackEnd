@@ -65,11 +65,11 @@ public class CardController {
     public void deleteCard(@PathVariable int id) throws CardNotFoundException {
         cardService.deleteCard(id);
     }
-    @GetMapping("/{id}/assoc-options")
+   /* @GetMapping("/{id}/assoc-options")
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public void getCardAssocOption(@PathVariable("id") int cardId,@RequestParam(value = "assoc", required = false) AssocType assocType) throws CardNotFoundException {
         cardService.getCardAssocOption(cardId,assocType);
-    }
+    }*/
 
 
 }
