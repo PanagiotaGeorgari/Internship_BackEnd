@@ -79,20 +79,20 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_"+role.name().toUpperCase()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name().toUpperCase()));
     }
 
     public String getPassword() {
         return password;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     @Override
     public String getUsername() {
         return email;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     @Override
@@ -104,6 +104,7 @@ public class User implements UserDetails {
                 ", role=" + role +
                 '}';
     }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

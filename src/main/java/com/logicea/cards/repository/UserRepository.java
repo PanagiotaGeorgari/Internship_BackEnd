@@ -1,4 +1,5 @@
 package com.logicea.cards.repository;
+
 import com.logicea.cards.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
