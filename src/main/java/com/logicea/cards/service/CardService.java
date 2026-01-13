@@ -1,6 +1,7 @@
 package com.logicea.cards.service;
 
 import com.logicea.cards.CardNotFoundException;
+import com.logicea.cards.GetByIdResponse;
 import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
 import com.logicea.cards.entity.Card;
@@ -12,7 +13,7 @@ import java.util.Optional;
 public interface CardService {
 
     //List<CardDto> getAll();
-    Optional<Card> getById(int cardId) throws CardNotFoundException, AccessDeniedException;
+    GetByIdResponse getById(int cardId) throws CardNotFoundException, AccessDeniedException;
 
     CardDto newCard(CardDto newCard);
 
