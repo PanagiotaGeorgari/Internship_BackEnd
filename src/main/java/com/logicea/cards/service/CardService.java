@@ -4,10 +4,11 @@ import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.GetByIdResponse;
 import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
-import com.logicea.cards.entity.Card;
+import com.logicea.cards.enums.AssocType;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.nio.file.AccessDeniedException;
-import java.util.Optional;
 
 
 public interface CardService {
@@ -24,6 +25,8 @@ public interface CardService {
     void deleteCard(int id) throws CardNotFoundException;
 
     PaginationResponse<CardDto> getCardsPagination(int page, int size, String sort);
+
+    void getCardAvailAssoc(@PathVariable("id") int cardId, @RequestParam(value = "assoc", required = false) AssocType assocType) throws CardNotFoundException;
 
 
 }

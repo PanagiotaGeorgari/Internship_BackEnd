@@ -9,10 +9,12 @@ import com.logicea.cards.dto.CardSummaryDto;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
+import com.logicea.cards.enums.AssocType;
 import com.logicea.cards.enums.UserRole;
 import com.logicea.cards.mapper.CardMapper;
 import com.logicea.cards.repository.AssocRepository;
 import com.logicea.cards.repository.CardRepository;
+import com.logicea.cards.repository.UserRepository;
 import com.logicea.cards.service.CardService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,10 +35,12 @@ public class CardServiceImpl implements CardService {
 
     private final CardRepository cardRepository;
     private final AssocRepository assocRepository;
+    private final UserRepository userRepository;
 
-    public CardServiceImpl(CardRepository repository, AssocRepository assocRepository) {
+    public CardServiceImpl(CardRepository repository, AssocRepository assocRepository, UserRepository userRepository) {
         this.cardRepository = repository;
         this.assocRepository = assocRepository;
+        this.userRepository = userRepository;
     }
 
     /*@Override
@@ -215,6 +219,34 @@ public class CardServiceImpl implements CardService {
                 .collect(Collectors.toList());
 
         return new PaginationResponse<>(page, size, sort, cardPage.getTotalPages(), dtos);
+    }
+
+    @Override
+    public void getCardAvailAssoc(int cardId, AssocType assocType) throws CardNotFoundException {
+        User user = getCurrentUser();
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
+        List<Card> cards = new ArrayList<>();
+        if (isAdmin) {
+            cards.addAll(cardRepository.findAll());
+        } else {
+            cards.addAll(cardRepository.findByCreatedBy(user.getUserId()));
+        }
+        List<Integer> cardsIds = new ArrayList<>();
+        for (Card card : cards) {
+            cardsIds.add(card.getCardId());
+        }
+        List<Assoc> assocs = new ArrayList<>();
+        assocs.addAll(assocRepository.findByLcardId(cardId));
+        for (Assoc assoc : assocs) {
+            cardsIds.remove(Integer.valueOf(assoc.getRcardId()));
+        }
+        List<Card> finalCards = new ArrayList<>();
+        for (int id : cardsIds) {
+            finalCards.add(cardRepository.findById(id).get());
+            System.out.println(finalCards.get(0).getName());
+        }
+
+
     }
 
     private User getCurrentUser() {

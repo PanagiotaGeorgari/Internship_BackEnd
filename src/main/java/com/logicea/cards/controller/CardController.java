@@ -4,6 +4,7 @@ import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.GetByIdResponse;
 import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
+import com.logicea.cards.enums.AssocType;
 import com.logicea.cards.service.CardService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,11 +62,12 @@ public class CardController {
     public void deleteCard(@PathVariable int id) throws CardNotFoundException {
         cardService.deleteCard(id);
     }
-   /* @GetMapping("/{id}/assoc-options")
+
+    @GetMapping("/{id}/assoc-options")
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
-    public void getCardAssocOption(@PathVariable("id") int cardId,@RequestParam(value = "assoc", required = false) AssocType assocType) throws CardNotFoundException {
-        cardService.getCardAssocOption(cardId,assocType);
-    }*/
+    public void getCardAvailAssoc(@PathVariable("id") int cardId, @RequestParam(value = "assoc", required = false) AssocType assocType) throws CardNotFoundException {
+        cardService.getCardAvailAssoc(cardId, assocType);
+    }
 
 
 }
