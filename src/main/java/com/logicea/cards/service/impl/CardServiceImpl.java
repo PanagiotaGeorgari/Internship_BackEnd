@@ -1,6 +1,7 @@
 package com.logicea.cards.service.impl;
 
 import com.logicea.cards.CardNotFoundException;
+import com.logicea.cards.GetAvailResponce;
 import com.logicea.cards.GetByIdResponse;
 import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.AssocDto;
@@ -28,6 +29,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,8 +65,7 @@ public class CardServiceImpl implements CardService {
     @Override
     public GetByIdResponse getById(int id) throws CardNotFoundException, AccessDeniedException {
         User user = getCurrentUser();
-        boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = user.getRole()==UserRole.ADMIN;
 
         Card mainCard = cardRepository.findById(id).get();
 
@@ -222,30 +223,35 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public void getCardAvailAssoc(int cardId, AssocType assocType) throws CardNotFoundException {
+    public GetAvailResponce getCardAvailAssoc(int cardId, AssocType assocType) throws CardNotFoundException {
         User user = getCurrentUser();
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
         List<Card> cards = new ArrayList<>();
+
         if (isAdmin) {
             cards.addAll(cardRepository.findAll());
         } else {
             cards.addAll(cardRepository.findByCreatedBy(user.getUserId()));
         }
-        List<Integer> cardsIds = new ArrayList<>();
-        for (Card card : cards) {
-            cardsIds.add(card.getCardId());
-        }
-        List<Assoc> assocs = new ArrayList<>();
-        assocs.addAll(assocRepository.findByLcardId(cardId));
-        for (Assoc assoc : assocs) {
-            cardsIds.remove(Integer.valueOf(assoc.getRcardId()));
-        }
-        List<Card> finalCards = new ArrayList<>();
-        for (int id : cardsIds) {
-            finalCards.add(cardRepository.findById(id).get());
-            System.out.println(finalCards.get(0).getName());
+
+        Set<Integer> removedIds;
+        if (assocType == AssocType.BLOCKS || assocType == AssocType.CHILD_OF) {
+            removedIds = assocRepository.findByRcardIdAndType(cardId, assocType).stream()
+                    .map(Assoc::getRcardId)
+                    .collect(Collectors.toSet());
+        } else {
+            removedIds = assocRepository.findByLcardIdAndType(cardId, assocType).stream()
+                    .map(Assoc::getLcardId)
+                    .collect(Collectors.toSet());
         }
 
+        List<CardSummaryDto> cardDtos = cards.stream()
+                .filter(card -> !removedIds.contains(card.getCardId()))
+                .filter(card -> card.getCardId() != cardId)
+                .map(card -> new CardSummaryDto(card.getCardId(), card.getName()))
+                .toList();
+
+        return new GetAvailResponce(cardDtos);
 
     }
 

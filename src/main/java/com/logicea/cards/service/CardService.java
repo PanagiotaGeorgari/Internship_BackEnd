@@ -1,6 +1,7 @@
 package com.logicea.cards.service;
 
 import com.logicea.cards.CardNotFoundException;
+import com.logicea.cards.GetAvailResponce;
 import com.logicea.cards.GetByIdResponse;
 import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
@@ -26,7 +27,7 @@ public interface CardService {
 
     PaginationResponse<CardDto> getCardsPagination(int page, int size, String sort);
 
-    void getCardAvailAssoc(@PathVariable("id") int cardId, @RequestParam(value = "assoc", required = false) AssocType assocType) throws CardNotFoundException;
+    GetAvailResponce getCardAvailAssoc(int cardId,  AssocType assocType) throws CardNotFoundException;
 
 
 }

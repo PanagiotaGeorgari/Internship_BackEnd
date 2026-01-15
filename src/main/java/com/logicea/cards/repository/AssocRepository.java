@@ -13,6 +13,11 @@ public interface AssocRepository extends JpaRepository<Assoc, Integer> {
     Optional<Assoc> findByRcardIdAndLcardId(Integer rcardId, Integer lcardId);
 
     Collection<? extends Assoc> findByLcardId(Integer lcardId);
+
+    Collection<? extends Assoc> findByRcardIdAndType(Integer rcardId, AssocType assocType);
+
+    Collection<? extends Assoc> findByLcardIdAndType(int cardId, AssocType assocType);
+
     //List<Assoc> findAssocByAssocType(AssocType assocType);
 
 }

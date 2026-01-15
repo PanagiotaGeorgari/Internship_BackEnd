@@ -1,6 +1,7 @@
 package com.logicea.cards.controller;
 
 import com.logicea.cards.CardNotFoundException;
+import com.logicea.cards.GetAvailResponce;
 import com.logicea.cards.GetByIdResponse;
 import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
@@ -65,8 +66,8 @@ public class CardController {
 
     @GetMapping("/{id}/assoc-options")
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
-    public void getCardAvailAssoc(@PathVariable("id") int cardId, @RequestParam(value = "assoc", required = false) AssocType assocType) throws CardNotFoundException {
-        cardService.getCardAvailAssoc(cardId, assocType);
+    public GetAvailResponce getCardAvailAssoc(@PathVariable("id") int cardId, @RequestParam(value = "assoc", required = false) AssocType assocType) throws CardNotFoundException {
+        return cardService.getCardAvailAssoc(cardId, assocType);
     }
 
 

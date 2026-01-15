@@ -22,5 +22,6 @@ public record CardDto(
         int createdBy,
         Instant createdAt,
         Instant updatedAt,
-        int updatedBy) {
+        int updatedBy,
+        CardSummaryDto card) {
 }
