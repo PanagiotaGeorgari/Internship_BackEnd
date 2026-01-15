@@ -1,10 +1,12 @@
 package com.logicea.cards;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-public//set custom HTTP status codes for controller methods
-class AssocNotFoundException extends RuntimeException {
+@ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Assoc Not Found")
+public class AssocNotFoundException extends RuntimeException {
     public AssocNotFoundException(String id) {
-        super("Asooc with id " + id + " not found");
+        super("Assoc with id " + id + " not found");
     }
 
 }

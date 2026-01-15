@@ -1,17 +1,20 @@
 package com.logicea.cards;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Map;
 
 @ControllerAdvice
-public class AssocControllerEcxeptions {
+public class AssocControllerExceptions {
 
     @ExceptionHandler(AssocAlreadyExistsException.class)
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Assoc Already exists!")
     public ResponseEntity<Map<String, String>> handleAssocExists(AssocAlreadyExistsException ex) {
-        // Επιστρέφει JSON: {"message": "This association already exists!"}
         return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
     }
+
 }
