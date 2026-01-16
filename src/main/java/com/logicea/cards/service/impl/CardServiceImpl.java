@@ -29,7 +29,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,7 +64,7 @@ public class CardServiceImpl implements CardService {
     @Override
     public GetByIdResponse getById(int id) throws CardNotFoundException, AccessDeniedException {
         User user = getCurrentUser();
-        boolean isAdmin = user.getRole()==UserRole.ADMIN;
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
 
         Card mainCard = cardRepository.findById(id).get();
 
@@ -234,16 +233,20 @@ public class CardServiceImpl implements CardService {
             cards.addAll(cardRepository.findByCreatedBy(user.getUserId()));
         }
 
-        Set<Integer> removedIds;
+        List<Integer> removedIds;
         if (assocType == AssocType.BLOCKS || assocType == AssocType.CHILD_OF) {
-            removedIds = assocRepository.findByRcardIdAndType(cardId, assocType).stream()
+
+            removedIds = assocRepository.findByLcardIdAndAssoc(cardId, assocType).stream()
                     .map(Assoc::getRcardId)
-                    .collect(Collectors.toSet());
+                    .toList();
+
+
         } else {
-            removedIds = assocRepository.findByLcardIdAndType(cardId, assocType).stream()
+            removedIds = assocRepository.findByRcardId(cardId).stream()
                     .map(Assoc::getLcardId)
-                    .collect(Collectors.toSet());
+                    .toList();
         }
+
 
         List<CardSummaryDto> cardDtos = cards.stream()
                 .filter(card -> !removedIds.contains(card.getCardId()))
