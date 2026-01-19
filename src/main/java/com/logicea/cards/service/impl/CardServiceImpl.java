@@ -66,31 +66,16 @@ public class CardServiceImpl implements CardService {
         User user = getCurrentUser();
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
 
-        Card mainCard = cardRepository.findById(id).get();
+        Card mainCard = cardRepository.findById(id).isPresent() ? cardRepository.findById(id).get() : null;
 
-        if (!isAdmin && mainCard.getCreatedBy() != user.getUserId()) {
-            throw new AccessDeniedException("You do not have permission to access this resource");
+        if (!isAdmin) {
+            assert mainCard != null;
+            if (mainCard.getCreatedBy() != user.getUserId()) {
+                throw new AccessDeniedException("You do not have permission to access this resource");
+            }
         }
-        //θελω να φτιαξω ενα
-
-        List<Assoc> assocs = new ArrayList<>();
-        assocs.addAll(assocRepository.findByLcardId(id));
-
-
-        List<AssocDto> associationDtos = assocs.stream().map(assoc -> {//create the responce's format
-
-            int targetCardId = assoc.getRcardId();
-            String otherCardName = cardRepository.findById(targetCardId).get().getName();
-            return new AssocDto(
-                    assoc.getId(),
-                    null,
-                    null,
-                    assoc.getAssoc(),
-                    new CardSummaryDto(targetCardId, otherCardName)
-            );
-        }).collect(Collectors.toList());
-
-        return new GetByIdResponse(mainCard, associationDtos);
+        List<AssocDto> associations = cardRepository.findAssociationsAsDto(id); //sql query in cardrepository
+        return new GetByIdResponse(mainCard, associations);
 
     }
 

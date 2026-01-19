@@ -12,5 +12,8 @@ public record AssocDto(
         AssocType assoc,
         CardSummaryDto card // infos for the other card
 ) {
+    public AssocDto(Integer id, AssocType assoc, CardSummaryDto card) {
+        this(id, null, null, assoc, card);
+    }
 }
 
