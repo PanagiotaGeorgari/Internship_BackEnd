@@ -16,9 +16,7 @@ public interface AssocRepository extends JpaRepository<Assoc, Integer> {
 
     Collection<Assoc> findByLcardId(int lcardId);
 
-
     Collection<Assoc> findByLcardIdAndAssoc(Integer lcardId, AssocType assocType);
-    Collection<Assoc> findByRcardIdAndAssoc(Integer rcardId, AssocType assocType);
 
 
 }

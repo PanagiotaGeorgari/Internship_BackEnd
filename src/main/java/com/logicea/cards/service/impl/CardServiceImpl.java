@@ -71,9 +71,11 @@ public class CardServiceImpl implements CardService {
         if (!isAdmin && mainCard.getCreatedBy() != user.getUserId()) {
             throw new AccessDeniedException("You do not have permission to access this resource");
         }
+        //θελω να φτιαξω ενα
 
         List<Assoc> assocs = new ArrayList<>();
         assocs.addAll(assocRepository.findByLcardId(id));
+
 
         List<AssocDto> associationDtos = assocs.stream().map(assoc -> {//create the responce's format
 
@@ -89,6 +91,7 @@ public class CardServiceImpl implements CardService {
         }).collect(Collectors.toList());
 
         return new GetByIdResponse(mainCard, associationDtos);
+
     }
 
     @Override
@@ -225,11 +228,14 @@ public class CardServiceImpl implements CardService {
     public GetAvailResponce getCardAvailAssoc(int cardId, AssocType assocType) throws CardNotFoundException {
         User user = getCurrentUser();
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
-        List<Card> cards = new ArrayList<>();
 
+        List<Card> cards = new ArrayList<>();
         if (isAdmin) {
             cards.addAll(cardRepository.findAll());
         } else {
+            if (cardRepository.findById(cardId).get().getCreatedBy() != user.getUserId()) {
+                throw new AccessDeniedException("Members can only associate their own cards!");
+            }
             cards.addAll(cardRepository.findByCreatedBy(user.getUserId()));
         }
 
