@@ -1,19 +1,20 @@
 package com.logicea.cards;
 
-import com.logicea.cards.dto.CardDto;
 import com.logicea.cards.dto.CardSummaryDto;
-import com.logicea.cards.entity.Card;
 
 import java.util.List;
 
 public class GetAvailResponce {
     List<CardSummaryDto> data;
-    public  GetAvailResponce(List<CardSummaryDto> cards){
-        this.data=cards;
+
+    public GetAvailResponce(List<CardSummaryDto> cards) {
+        this.data = cards;
     }
+
     public List<CardSummaryDto> getCards() {
         return data;
     }
+
     public void setCards(List<CardSummaryDto> cards) {
         this.data = cards;
     }

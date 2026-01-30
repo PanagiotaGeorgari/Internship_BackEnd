@@ -12,7 +12,7 @@ public interface AssocService {
 
     void deleteAssoc(int id);
 
-    List<Assoc> getCardAssocs(int cardId);
+    List<AssocDto> getCardAssocs(int cardId);
 
     Collection<Assoc> getCardAssocsByType(int cardId, AssocType assocType);
 }

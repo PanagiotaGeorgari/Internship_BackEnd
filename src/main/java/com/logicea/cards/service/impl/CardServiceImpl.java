@@ -1,18 +1,12 @@
 package com.logicea.cards.service.impl;
 
 import com.logicea.cards.CardNotFoundException;
-import com.logicea.cards.GetAvailResponce;
 import com.logicea.cards.GetByIdResponse;
-import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.AssocDto;
-import com.logicea.cards.dto.CardDto;
-import com.logicea.cards.dto.CardSummaryDto;
-import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
 import com.logicea.cards.enums.AssocType;
 import com.logicea.cards.enums.UserRole;
-import com.logicea.cards.mapper.CardMapper;
 import com.logicea.cards.repository.CardRepository;
 import com.logicea.cards.service.AssocService;
 import com.logicea.cards.service.CardService;
@@ -26,10 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CardServiceImpl implements CardService {
@@ -41,23 +33,6 @@ public class CardServiceImpl implements CardService {
         this.cardRepository = repository;
         this.assocService = assocService;
     }
-
-    /*@Override
-    public List<CardDto> getAll() {
-        User user = getCurrentUser();
-        boolean isAdmin = user.getRole() == UserRole.ADMIN;
-        List<Card> cards;
-        if(isAdmin){
-            cards = cardRepository.findAll();
-        }else{
-           cards= cardRepository.findByCreatedBy(user.getUserId());
-        }
-        return cards.stream()
-                .map(CardMapper::toDto)
-                .collect(Collectors.toList());
-
-    }*/
-
 
     @Override
     public GetByIdResponse getById(int id) throws CardNotFoundException, AccessDeniedException {
@@ -72,7 +47,7 @@ public class CardServiceImpl implements CardService {
                 throw new AccessDeniedException("You do not have permission to access this resource");
             }
         }
-        List<Assoc> associations = assocService.getCardAssocs(id); //sql query in cardrepository
+        List<AssocDto> associations = assocService.getCardAssocs(id); //sql query in cardrepository
         return new GetByIdResponse(mainCard, associations);
 
     }
@@ -100,7 +75,7 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public CardDto replaceCard(CardDto newCardDto, int id) throws CardNotFoundException {
+    public Card replaceCard(Card newCard, int id) throws CardNotFoundException {
         Optional<Card> card = cardRepository.findById(id);
         Card cardObject = card.get();
         if (card.isEmpty()) { //if cardId does  not exist
@@ -109,24 +84,24 @@ public class CardServiceImpl implements CardService {
             User user = getCurrentUser();//take user
             boolean isAdmin = user.getRole() == UserRole.ADMIN;
             if (isAdmin) { //if is admin he can update any card
-                cardObject.setName(newCardDto.name());
-                cardObject.setDescription(newCardDto.description());
-                cardObject.setColor(newCardDto.color());
-                cardObject.setStatus(newCardDto.status());
+                cardObject.setName(newCard.getName());
+                cardObject.setDescription(newCard.getDescription());
+                cardObject.setColor(newCard.getColor());
+                cardObject.setStatus(newCard.getStatus());
                 cardObject.setUpdatedBy(user.getUserId());
                 cardObject.setUpdatedAt(Instant.now());
                 Card updatedCard = cardRepository.save(cardObject);
-                return CardMapper.toDto(updatedCard);
+                return updatedCard;
             } else { //if user is member
                 if (cardObject.getCreatedBy() == user.getUserId()) { //check if cardObject belongs  to user
-                    cardObject.setName(newCardDto.name());
-                    cardObject.setDescription(newCardDto.description());
-                    cardObject.setColor(newCardDto.color());
-                    cardObject.setStatus(newCardDto.status());
+                    cardObject.setName(newCard.getName());
+                    cardObject.setDescription(newCard.getDescription());
+                    cardObject.setColor(newCard.getColor());
+                    cardObject.setStatus(newCard.getStatus());
                     cardObject.setUpdatedBy(user.getUserId());
                     cardObject.setUpdatedAt(Instant.now());
                     Card updatedCard = cardRepository.save(cardObject);
-                    return CardMapper.toDto(updatedCard);
+                    return updatedCard;
                 } else {
                     throw new AccessDeniedException("You do not have permission to access this resource"); //if card doesn't belong to this user
                 }
@@ -135,7 +110,7 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public CardDto partialUpdateCard(CardDto updates, int id) throws CardNotFoundException {
+    public Card partialUpdateCard(Card updates, int id) throws CardNotFoundException {
         Optional<Card> card = cardRepository.findById(id);
         Card cardObject = card.get();
 
@@ -145,24 +120,24 @@ public class CardServiceImpl implements CardService {
             User user = getCurrentUser();//get connected user
             boolean isAdmin = user.getRole() == UserRole.ADMIN;
             if (isAdmin) { //user role is Admin
-                if (updates.name() != null) cardObject.setName(updates.name()); //finds the updated field
-                if (updates.description() != null) cardObject.setDescription(updates.description());
-                if (updates.color() != null) cardObject.setColor(updates.color());
-                if (updates.status() != null) cardObject.setStatus(updates.status());
+                if (updates.getName() != null) cardObject.setName(updates.getName()); //finds the updated field
+                if (updates.getDescription() != null) cardObject.setDescription(updates.getDescription());
+                if (updates.getColor() != null) cardObject.setColor(updates.getColor());
+                if (updates.getStatus() != null) cardObject.setStatus(updates.getStatus());
                 cardObject.setUpdatedBy(user.getUserId());
                 cardObject.setUpdatedAt(Instant.now());
                 Card updatedCard = cardRepository.save(cardObject);
-                return CardMapper.toDto(updatedCard);
+                return updatedCard;
             } else {
                 if (cardObject.getCreatedBy() == user.getUserId()) { //check if cardObject belongs to user
-                    if (updates.name() != null) cardObject.setName(updates.name()); //finds the updated field
-                    if (updates.description() != null) cardObject.setDescription(updates.description());
-                    if (updates.color() != null) cardObject.setColor(updates.color());
-                    if (updates.status() != null) cardObject.setStatus(updates.status());
+                    if (updates.getName() != null) cardObject.setName(updates.getName()); //finds the updated field
+                    if (updates.getDescription() != null) cardObject.setDescription(updates.getDescription());
+                    if (updates.getColor() != null) cardObject.setColor(updates.getColor());
+                    if (updates.getStatus() != null) cardObject.setStatus(updates.getStatus());
                     cardObject.setUpdatedBy(user.getUserId());
                     cardObject.setUpdatedAt(Instant.now());
                     Card updatedCard = cardRepository.save(cardObject);
-                    return CardMapper.toDto(updatedCard);
+                    return updatedCard;
                 } else {
                     throw new AccessDeniedException("You do not have permission to access this resource"); //if card doesn't belong to this user
                 }
@@ -171,24 +146,21 @@ public class CardServiceImpl implements CardService {
     }
 
 
-    @Override
-    public CardDto newCard(CardDto cardDto) {
+    public Card newCard(Card card) {
         User user = getCurrentUser();
-        int userId = user.getUserId();
-        Card card = CardMapper.toEntity(cardDto);
         card.setCreatedBy(user.getUserId());
         card.setUpdatedBy(user.getUserId());
         card.setCreatedAt(Instant.now());
         card.setUpdatedAt(Instant.now());
         Card savedCard = cardRepository.save(card);
         System.out.println(savedCard.getCreatedBy());
-        return CardMapper.toDto(savedCard);
+        return savedCard;
 
     }
 
 
     @Override
-    public PaginationResponse<CardDto> getCardsPagination(int page, int size, String sort) {
+    public Page<Card> getCardsPagination(int page, int size, String sort) {
         User user = getCurrentUser();
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sort));
@@ -198,17 +170,11 @@ public class CardServiceImpl implements CardService {
         } else {
             cardPage = cardRepository.findByCreatedBy(user.getUserId(), pageable);
         }
-
-
-        List<CardDto> dtos = cardPage.getContent().stream()
-                .map(CardMapper::toDto)
-                .collect(Collectors.toList());
-
-        return new PaginationResponse<>(page, size, sort, cardPage.getTotalPages(), dtos);
+        return cardPage;
     }
 
     @Override
-    public GetAvailResponce getCardAvailAssoc(int cardId, AssocType assocType) throws CardNotFoundException {
+    public List<Card> getCardAvailAssoc(int cardId, AssocType assocType) throws CardNotFoundException {
         User user = getCurrentUser();
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
 
@@ -234,13 +200,10 @@ public class CardServiceImpl implements CardService {
                 })
                 .toList();
 
-        List<CardSummaryDto> cardDtos = cards.stream()
+        return cards.stream()
                 .filter(card -> card.getCardId() != cardId)
                 .filter(card -> !removedIds.contains(card.getCardId()))
-                .map(card -> new CardSummaryDto(card.getCardId(), card.getName()))
                 .toList();
-
-        return new GetAvailResponce(cardDtos);
 
     }
 

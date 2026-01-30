@@ -1,8 +1,6 @@
 package com.logicea.cards.service.impl;
 
-import com.logicea.cards.dto.UserDto;
 import com.logicea.cards.entity.User;
-import com.logicea.cards.mapper.UserMapper;
 import com.logicea.cards.repository.UserRepository;
 import com.logicea.cards.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +10,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
 
-    private UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private UserRepository userRepository;
+
     @Autowired
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -34,9 +31,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public boolean validateUser(String email, String password) {
-       User user =userRepository.findByEmail(email).get();
-       String passFromBase =user.getPassword();
-       return passwordEncoder.matches(password,passFromBase);
+        User user = userRepository.findByEmail(email).get();
+        String passFromBase = user.getPassword();
+        return passwordEncoder.matches(password, passFromBase);
     }
 
     @Override

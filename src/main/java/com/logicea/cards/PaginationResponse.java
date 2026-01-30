@@ -1,12 +1,13 @@
 package com.logicea.cards;
+
 import java.util.List;
 
-public class PaginationResponse <T>{
+public class PaginationResponse<T> {
     private int page;
     private int size;
     private String sort;
     private int total;
-    private List <T> data ;
+    private List<T> data;
 
     public PaginationResponse(int page, int size, String sort, int totalPages, List<T> data) {
         this.page = page;
@@ -55,7 +56,6 @@ public class PaginationResponse <T>{
     public void setData(List<T> data) {
         this.data = data;
     }
-
 
 
 }

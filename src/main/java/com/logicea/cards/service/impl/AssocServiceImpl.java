@@ -3,6 +3,8 @@ package com.logicea.cards.service.impl;
 import com.logicea.cards.AssocAlreadyExistsException;
 import com.logicea.cards.AssocNotFoundException;
 import com.logicea.cards.CardNotFoundException;
+
+import com.logicea.cards.dto.AssocDto;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
@@ -63,7 +65,6 @@ public class AssocServiceImpl implements AssocService {
             System.out.println("member newAssoc");
             if (!ownerLeftCard || !ownerRightCard) { // if cards do not belong to the same user
                 return false;
-                // throw new AccessDeniedException("Can not associate cards with different users!");
             }
             return true;
         }
@@ -119,13 +120,13 @@ public class AssocServiceImpl implements AssocService {
     }
 
     @Override
-    public List<Assoc> getCardAssocs(int cardId) {
+    public List<AssocDto> getCardAssocs(int cardId) {
         return assocRepository.findAssociationsAsDto(cardId);
     }
 
     @Override
     public Collection<Assoc> getCardAssocsByType(int cardId, AssocType assocType) {
-        return assocRepository.findBycardIdAndAssocType(cardId, assocType);
+        return assocRepository.findByCardIdAndAssocType(cardId, assocType);
     }
 
     public Assoc getAssoc(Integer rcardId, Integer lcardId) {

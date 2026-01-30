@@ -5,13 +5,18 @@ import com.logicea.cards.GetAvailResponce;
 import com.logicea.cards.GetByIdResponse;
 import com.logicea.cards.PaginationResponse;
 import com.logicea.cards.dto.CardDto;
+import com.logicea.cards.dto.CardSummaryDto;
+import com.logicea.cards.entity.Card;
 import com.logicea.cards.enums.AssocType;
+import com.logicea.cards.mapper.CardMapper;
 import com.logicea.cards.service.CardService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cards")
@@ -26,12 +31,21 @@ public class CardController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
-    public PaginationResponse<CardDto> getAll(
+    public PaginationResponse<CardSummaryDto> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "cardId") String sort) {
-
-        return cardService.getCardsPagination(page, size, sort);
+        Page<Card> cardPage = cardService.getCardsPagination(page, size, sort);
+        List<CardSummaryDto> dtos = cardPage.getContent().stream()
+                .map(card -> new CardSummaryDto(card.getCardId(), card.getName()))
+                .toList();
+        return new PaginationResponse<>(
+                cardPage.getNumber(),
+                cardPage.getSize(),
+                sort,
+                cardPage.getTotalPages(),
+                dtos
+        );
     }
 
     @GetMapping("/{cardId}")
@@ -43,19 +57,25 @@ public class CardController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public CardDto newCard(@Valid @RequestBody CardDto newCardDto) {
-        return cardService.newCard(newCardDto);
+        Card card = CardMapper.toEntity(newCardDto);
+        card = cardService.newCard(card);
+        return CardMapper.toDto(card);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public CardDto replaceCard(@Valid @RequestBody CardDto newCardDto, @PathVariable int id) throws CardNotFoundException {
-        return cardService.replaceCard(newCardDto, id);
+        Card card = CardMapper.toEntity(newCardDto);
+        card = cardService.replaceCard(card, id);
+        return CardMapper.toDto(card);
     }
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public CardDto partialUpdateCard(@Valid @RequestBody CardDto updates, @PathVariable int id) throws CardNotFoundException {
-        return cardService.partialUpdateCard(updates, id);
+        Card card = CardMapper.toEntity(updates);
+        card = cardService.partialUpdateCard(card, id);
+        return CardMapper.toDto(card);
     }
 
     @DeleteMapping("/{id}")
@@ -67,7 +87,14 @@ public class CardController {
     @GetMapping("/{id}/assoc-options")
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
     public GetAvailResponce getCardAvailAssoc(@PathVariable("id") int cardId, @RequestParam(value = "assoc", required = false) AssocType assocType) throws CardNotFoundException {
-        return cardService.getCardAvailAssoc(cardId, assocType);
+
+        List<Card> cards = cardService.getCardAvailAssoc(cardId, assocType);
+
+        List<CardSummaryDto> dtos = cards.stream()
+                .map(card -> new CardSummaryDto(card.getCardId(), card.getName()))
+                .toList();
+
+        return new GetAvailResponce(dtos);
     }
 
 
