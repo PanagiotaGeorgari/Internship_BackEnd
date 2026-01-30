@@ -3,7 +3,6 @@ package com.logicea.cards.service.impl;
 import com.logicea.cards.AssocAlreadyExistsException;
 import com.logicea.cards.AssocNotFoundException;
 import com.logicea.cards.CardNotFoundException;
-import com.logicea.cards.dto.AssocDto;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
@@ -107,9 +106,9 @@ public class AssocServiceImpl implements AssocService {
         int rcardid = assoc.getRcardId();
 
         if (!isAdmin &&
-            !(cardRepository.findById(lcardid).get().getCreatedBy() == user.getUserId() &&
-                cardRepository.findById(rcardid).get().getCreatedBy() == user.getUserId()
-            )
+                !(cardRepository.findById(lcardid).get().getCreatedBy() == user.getUserId() &&
+                        cardRepository.findById(rcardid).get().getCreatedBy() == user.getUserId()
+                )
         ) {
             throw new AccessDeniedException("Can not associate cards with different users!");
         }
@@ -126,7 +125,7 @@ public class AssocServiceImpl implements AssocService {
 
     @Override
     public Collection<Assoc> getCardAssocsByType(int cardId, AssocType assocType) {
-        return List.of();
+        return assocRepository.findBycardIdAndAssocType(cardId, assocType);
     }
 
     public Assoc getAssoc(Integer rcardId, Integer lcardId) {
