@@ -16,6 +16,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,22 +31,22 @@ public class AssocServiceImpl implements AssocService {
     }
 
 
-    public List<Integer> newAssoc(AssocDto assocDto) {
-        Card lcard = cardRepository.findById(assocDto.lcardId())
-                .orElseThrow(() -> new CardNotFoundException(assocDto.lcardId()));
-        Card rcard = cardRepository.findById(assocDto.rcardId())
-                .orElseThrow(() -> new CardNotFoundException(assocDto.rcardId()));
+    public List<Integer> newAssoc(Assoc assoc) {
+        Card lcard = cardRepository.findById(assoc.getLcardId())
+                .orElseThrow(() -> new CardNotFoundException(assoc.getLcardId()));
+        Card rcard = cardRepository.findById(assoc.getRcardId())
+                .orElseThrow(() -> new CardNotFoundException(assoc.getRcardId()));
         User user = getCurrentUser();//take user
 
         if (!validateOwner(lcard, rcard, user)) {
             throw new AccessDeniedException("Members can only associate their own cards!");
         }
-        if (!uniqueAssoc(lcard, rcard, assocDto.assoc())) {
+        if (!uniqueAssoc(lcard, rcard, assoc.getAssoc())) {
             throw new AssocAlreadyExistsException("These cards are already associated!");
         }
 
-        Assoc a1 = createAssoc(lcard.getCardId(), rcard.getCardId(), assocDto.assoc());
-        Assoc a2 = createAssoc(rcard.getCardId(), lcard.getCardId(), assocDto.assoc().getInverseAssoc());
+        Assoc a1 = createAssoc(lcard.getCardId(), rcard.getCardId(), assoc.getAssoc());
+        Assoc a2 = createAssoc(rcard.getCardId(), lcard.getCardId(), assoc.getAssoc().getInverseAssoc());
 
         Assoc s1 = assocRepository.save(a1);
         Assoc s2 = assocRepository.save(a2);
@@ -98,32 +99,37 @@ public class AssocServiceImpl implements AssocService {
     }
 
     public void deleteAssoc(int id) {
-        boolean valid;
         User user = getCurrentUser();//take user
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
-        if (isAdmin) {
-            valid = true;
-        } else {
-            int lcardid = assocRepository.findById(id).get().getLcardId();
-            int rcardid = assocRepository.findById(id).get().getRcardId();
+        Assoc assoc = assocRepository.findById(id).orElseThrow(() -> new AssocNotFoundException(String.valueOf(id)));
 
-            if (cardRepository.findById(lcardid).get().getCreatedBy() == user.getUserId() & cardRepository.findById(rcardid).get().getCreatedBy() == user.getUserId()) {
-                valid = true;
-            } else {
-                throw new AccessDeniedException("Can not associate cards with different users!");
-            }
+        int lcardid = assoc.getLcardId();
+        int rcardid = assoc.getRcardId();
+
+        if (!isAdmin &&
+            !(cardRepository.findById(lcardid).get().getCreatedBy() == user.getUserId() &&
+                cardRepository.findById(rcardid).get().getCreatedBy() == user.getUserId()
+            )
+        ) {
+            throw new AccessDeniedException("Can not associate cards with different users!");
         }
-        if (valid) {
-            int lcardid = assocRepository.findById(id).get().getLcardId();
-            int rcardid = assocRepository.findById(id).get().getRcardId();
-            Assoc assoc = getAssocByRcard(rcardid, lcardid);
-            Assoc assocInv = getAssocByRcard(lcardid, rcardid);
-            assocRepository.delete(assoc);
-            assocRepository.delete(assocInv);
-        }
+
+        Assoc assocInv = getAssoc(lcardid, rcardid);
+        assocRepository.delete(assoc);
+        assocRepository.delete(assocInv);
     }
 
-    public Assoc getAssocByRcard(Integer rcardId, Integer lcardId) {
+    @Override
+    public List<Assoc> getCardAssocs(int cardId) {
+        return assocRepository.findAssociationsAsDto(cardId);
+    }
+
+    @Override
+    public Collection<Assoc> getCardAssocsByType(int cardId, AssocType assocType) {
+        return List.of();
+    }
+
+    public Assoc getAssoc(Integer rcardId, Integer lcardId) {
         Optional<Assoc> assocOptional = assocRepository.findByRcardIdAndLcardId(rcardId, lcardId);
         return assocOptional.orElseThrow(() -> new AssocNotFoundException("Association not found for rcardId: " + rcardId + " and lcardId: " + lcardId));
 
@@ -133,6 +139,4 @@ public class AssocServiceImpl implements AssocService {
         return (User) SecurityContextHolder.getContext(
         ).getAuthentication().getPrincipal();
     }
-
-
 }

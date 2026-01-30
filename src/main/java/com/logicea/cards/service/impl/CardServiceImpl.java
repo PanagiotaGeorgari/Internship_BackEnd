@@ -13,9 +13,8 @@ import com.logicea.cards.entity.User;
 import com.logicea.cards.enums.AssocType;
 import com.logicea.cards.enums.UserRole;
 import com.logicea.cards.mapper.CardMapper;
-import com.logicea.cards.repository.AssocRepository;
 import com.logicea.cards.repository.CardRepository;
-import com.logicea.cards.repository.UserRepository;
+import com.logicea.cards.service.AssocService;
 import com.logicea.cards.service.CardService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,13 +35,11 @@ import java.util.stream.Collectors;
 public class CardServiceImpl implements CardService {
 
     private final CardRepository cardRepository;
-    private final AssocRepository assocRepository;
-    private final UserRepository userRepository;
+    private final AssocService assocService;
 
-    public CardServiceImpl(CardRepository repository, AssocRepository assocRepository, UserRepository userRepository) {
+    public CardServiceImpl(CardRepository repository, AssocService assocService) {
         this.cardRepository = repository;
-        this.assocRepository = assocRepository;
-        this.userRepository = userRepository;
+        this.assocService = assocService;
     }
 
     /*@Override
@@ -74,7 +72,7 @@ public class CardServiceImpl implements CardService {
                 throw new AccessDeniedException("You do not have permission to access this resource");
             }
         }
-        List<AssocDto> associations = cardRepository.findAssociationsAsDto(id); //sql query in cardrepository
+        List<Assoc> associations = assocService.getCardAssocs(id); //sql query in cardrepository
         return new GetByIdResponse(mainCard, associations);
 
     }
@@ -225,23 +223,20 @@ public class CardServiceImpl implements CardService {
         }
 
         List<Integer> removedIds;
-        if (assocType == AssocType.BLOCKS || assocType == AssocType.CHILD_OF) {
 
-            removedIds = assocRepository.findByLcardIdAndAssoc(cardId, assocType).stream()
-                    .map(Assoc::getRcardId)
-                    .toList();
-
-
-        } else {
-            removedIds = assocRepository.findByRcardId(cardId).stream()
-                    .map(Assoc::getLcardId)
-                    .toList();
-        }
-
+        removedIds = assocService.getCardAssocsByType(cardId, assocType).stream()
+                .map(a -> {
+                    if (assocType == AssocType.BLOCKS || assocType == AssocType.CHILD_OF) {
+                        return a.getRcardId();
+                    } else {
+                        return a.getLcardId();
+                    }
+                })
+                .toList();
 
         List<CardSummaryDto> cardDtos = cards.stream()
-                .filter(card -> !removedIds.contains(card.getCardId()))
                 .filter(card -> card.getCardId() != cardId)
+                .filter(card -> !removedIds.contains(card.getCardId()))
                 .map(card -> new CardSummaryDto(card.getCardId(), card.getName()))
                 .toList();
 

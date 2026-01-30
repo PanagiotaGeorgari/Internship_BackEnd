@@ -1,14 +1,18 @@
 package com.logicea.cards.service;
 
-import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.dto.AssocDto;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import com.logicea.cards.entity.Assoc;
+import com.logicea.cards.enums.AssocType;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface AssocService {
-    List<Integer> newAssoc(AssocDto newAssoc);
+    List<Integer> newAssoc(Assoc newAssoc);
 
     void deleteAssoc(int id);
+
+    List<Assoc> getCardAssocs(int cardId);
+
+    Collection<Assoc> getCardAssocsByType(int cardId, AssocType assocType);
 }

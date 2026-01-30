@@ -1,18 +1,20 @@
 package com.logicea.cards;
 
 import com.logicea.cards.dto.AssocDto;
+import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
 
+import java.util.Collection;
 import java.util.List;
 
 
 public class GetByIdResponse {
     Card card;
-    List<AssocDto> assocs;
+    List<Assoc> assocs;
 
-    public GetByIdResponse(Card card, List<AssocDto> assocs) {
+    public GetByIdResponse(Card card, List<Assoc> assocs) {
         this.card = card;
-        this.assocs = assocs;
+        this.assocs =  assocs;
     }
 
     public Card getCard() {
@@ -23,11 +25,11 @@ public class GetByIdResponse {
         this.card = card;
     }
 
-    public List<AssocDto> getAssocs() {
+    public List<Assoc> getAssocs() {
         return assocs;
     }
 
-    public void setAssocs(List<AssocDto> assocs) {
+    public void setAssocs(List<Assoc> assocs) {
         this.assocs = assocs;
     }
 }
