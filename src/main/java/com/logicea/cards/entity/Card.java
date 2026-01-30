@@ -1,16 +1,13 @@
 package com.logicea.cards.entity;
+
 import com.logicea.cards.enums.CardStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 
 
 @Entity //this classs is also an entity in my sql base
-@Table(name="cards") //this class interacts with the table cards in database
+@Table(name = "cards") //this class interacts with the table cards in database
 public class Card {
     @Id // the primary key is the card_id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // automated generated the card_id (int)
@@ -28,19 +25,19 @@ public class Card {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private CardStatus status=CardStatus.TODO;
+    private CardStatus status = CardStatus.TODO;
 
     @Column(name = "created_by")
     private int createdBy;
 
-    @Column(name="created_at")
+    @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Instant createdAt;
 
-    @Column (name="updated_by")
+    @Column(name = "updated_by")
     private int updatedBy;
 
-    @Column(name="updated_at")
+    @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Instant updatedAt;
 
@@ -52,13 +49,14 @@ public class Card {
         this.status = status;
         this.createdBy = i1;
         this.createdAt = instant;
-        this.updatedBy=s;
+        this.updatedBy = s;
         this.updatedAt = instant1;
     }
 
-    public Card() {}
+    public Card() {
+    }
 
-    //------getters / setters------------------------------
+
     public int getCardId() {
         return cardId;
     }
@@ -116,7 +114,7 @@ public class Card {
         this.createdAt = createdAt;
     }
 
-    public int  getUpdatedBy() {
+    public int getUpdatedBy() {
         return updatedBy;
     }
 
@@ -132,10 +130,9 @@ public class Card {
         this.updatedAt = updatedAt;
     }
 
-    //-------------------------------------------------
 
     public String toString() {
-        System.out.println("Card ID: " + cardId +"\nName: "+name+"\nDescription: "+description+"\nColor: "+color+"\nStatus: "+status+"\nCreatedBy: "+ createdBy+"\nUpdatedBy: "+updatedBy+"\nUpdatedAt: "+updatedAt);
+        System.out.println("Card ID: " + cardId + "\nName: " + name + "\nDescription: " + description + "\nColor: " + color + "\nStatus: " + status + "\nCreatedBy: " + createdBy + "\nUpdatedBy: " + updatedBy + "\nUpdatedAt: " + updatedAt);
         return null;
     }
 }

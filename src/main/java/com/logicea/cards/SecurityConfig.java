@@ -25,8 +25,6 @@ public class SecurityConfig {
     private PasswordEncoder passwordEncoder;
 
 
-
-
     @Bean
     public TokenAuthenticationFilter tokenAuthenticationFilter() {
         return new TokenAuthenticationFilter(userDetailsService, passwordEncoder);

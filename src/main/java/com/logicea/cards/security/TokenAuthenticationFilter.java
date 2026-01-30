@@ -34,7 +34,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         if (token != null && !token.isEmpty()) {
-            try{
+            try {
 
                 String decoded = new String(Base64.getDecoder().decode(token));//decode the token
                 String[] tokenDecoded = decoded.split(":");
@@ -49,25 +49,25 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                     if (passwordEncoder.matches(rawPassword, userDetails.getPassword())) { // check if password matches with the encoded password in the base
                         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                         SecurityContextHolder.getContext().setAuthentication(auth); // updates spring that user is authenticated
-                    }
-                    else{
+                    } else {
                         sendUnauthorized(response, "Invalid username or password");
                         return;
                     }
                 }
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 sendUnauthorized(response, "Invalid tokens!");
-                return; }
-            }
-
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                sendUnauthorized(response, "Unauthorized access.(Token is missing !");
                 return;
             }
+        }
 
-            filterChain.doFilter(request, response);
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            sendUnauthorized(response, "Unauthorized access.(Token is missing !");
+            return;
+        }
+
+        filterChain.doFilter(request, response);
     }
+
     private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
