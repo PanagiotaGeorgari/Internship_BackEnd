@@ -2,7 +2,7 @@ spring:
   application:
     name: cards
   datasource:
-    url: jdbc:mysql://localhost:3306/cards
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/cards}
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver

@@ -16,7 +16,13 @@ public interface AssocRepository extends JpaRepository<Assoc, Integer> {
 
     Optional<Assoc> findByRcardIdAndLcardId(Integer rcardId, Integer lcardId);
 
-    Collection<Assoc> findByCardIdAndAssocType(Integer cardId, AssocType assocType);
+    @Query("SELECT a " +
+            "FROM Assoc a " +
+            "WHERE (a.lcardId = :cardId OR a.rcardId = :cardId) AND a.assoc = :assocType")
+    Collection<Assoc> findByCardIdAndAssocType(
+            @Param("cardId") Integer cardId,
+            @Param("assocType") AssocType assocType
+    );
 
     @Query("SELECT new com.logicea.cards.entity.Assoc(assoc.id,assoc.lcardId, assoc.assoc, assoc.rcardId , " +
             "new com.logicea.cards.dto.CardSummaryDto(c.cardId, c.name)) " +

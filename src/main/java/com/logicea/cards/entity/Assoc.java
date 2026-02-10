@@ -1,5 +1,6 @@
 package com.logicea.cards.entity;
 
+import com.logicea.cards.dto.CardSummaryDto;
 import com.logicea.cards.enums.AssocType;
 import jakarta.persistence.*;
 
@@ -21,9 +22,19 @@ public class Assoc {
     @Column(name = "rcard_id")
     private int rcardId;
 
+    @Transient
+    private CardSummaryDto cardsummaryDto;
 
     public Assoc() {
 
+    }
+
+    public Assoc(int id, int lcardId, AssocType assoc, int rcardId, CardSummaryDto cardSummaryDto) {
+        this.id = id;
+        this.lcardId = lcardId;
+        this.assoc = assoc;
+        this.rcardId = rcardId;
+        this.cardsummaryDto = cardSummaryDto;
     }
 
     public int getId() {
