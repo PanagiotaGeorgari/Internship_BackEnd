@@ -35,14 +35,14 @@
 
 ## UserServiceImpl
 
-| Method                    | Test Case                                                                                     | Result                                                                                   |
-|---------------------------|-----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| **createUser**            | Προσπαθούμε να αποθηκεύσουμε ένα νέο User στο repository                                      | Το νέο αντικείμενο User που αποθηκεύτηκε στο repository                                 |
-| **validateUser**          | Το email input υπάρχει στο repository                                                         | Κωδικοποιεί το password και επιστρέφει true αν το encoded ταιριάζει με το input         |
-|                           | Το email input υπάρχει στο repository                                                         | Κωδικοποιεί το password και επιστρέφει false αν το encoded δεν ταιριάζει με το input    |
-|                           | Το email input δεν υπάρχει στο repository                                                     | `Throw UsernameNotFoundException()`                                                     |
-| **loadUserByUsername**    | Το email input υπάρχει στο repository                                                     | Επιστρέφει ένα αντικείμενο UserDetails                                                 |
-|                           | Το email input δεν υπάρχει στο repository                                                     | `Throw UsernameNotFoundException()`                                                     |
+| Method                    | Test Case                                                       | Result                                                                                   |
+|---------------------------|-----------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| **createUser**            | Προσπαθούμε να αποθηκεύσουμε ένα νέο User στο repository        | Το νέο αντικείμενο User που αποθηκεύτηκε στο repository                                 |
+| **validateUser**          | Το email input υπάρχει στο repository και έχουμε σωστό password | Κωδικοποιεί το password και επιστρέφει true αν το encoded ταιριάζει με το input         |
+|                           | Το email input υπάρχει στο repository και έχουμε λάθος password | Κωδικοποιεί το password και επιστρέφει false αν το encoded δεν ταιριάζει με το input    |
+|                           | Το email input δεν υπάρχει στο repository                       | `Throw UsernameNotFoundException()`                                                     |
+| **loadUserByUsername**    | Το email input υπάρχει στο repository                           | Επιστρέφει ένα αντικείμενο UserDetails                                                 |
+|                           | Το email input δεν υπάρχει στο repository                       | `Throw UsernameNotFoundException()`                                                     |
 
 ---
 
