@@ -24,11 +24,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -538,7 +536,7 @@ public class CardServiceImplTest {
     }
 
     @Test
-    void getCardsPaginationMember_success() {
+    void getCardsPaginationMemberSuccess() {
 
         doCallRealMethod().when(cardService).getCardsPagination(anyInt(), anyInt(), anyString());
 
@@ -568,6 +566,7 @@ public class CardServiceImplTest {
         assertTrue(result.getContent().contains(card1));
         assertTrue(result.getContent().contains(card2));
     }
+
     @Test
     void getCardAvailAssocAdminSuccess() {
 
@@ -588,13 +587,13 @@ public class CardServiceImplTest {
         card2.setColor("#abc123");
         card2.setCreatedBy(currentUser.getUserId());
         Card card3 = new Card();
-        card2.setCardId(3);
-        card2.setName("card3");
-        card2.setDescription("card3");
-        card2.setColor("#abc123");
-        card2.setCreatedBy(currentUser.getUserId());
+        card3.setCardId(3);
+        card3.setName("card3");
+        card3.setDescription("card3");
+        card3.setColor("#abc123");
+        card3.setCreatedBy(currentUser.getUserId());
 
-        Assoc assoc = new Assoc(1,1,AssocType.BLOCKS,2,null);
+        Assoc assoc = new Assoc(1, 1, AssocType.BLOCKS, 2, null);
 
 
         //action
@@ -608,7 +607,7 @@ public class CardServiceImplTest {
         List<Card> result = cardService.getCardAvailAssoc(1, AssocType.BLOCKS);
 
         //check
-        assertEquals(2, result.size());
+        assertEquals(1, result.size());
         assertEquals(3, result.getFirst().getCardId());
     }
 
@@ -640,7 +639,7 @@ public class CardServiceImplTest {
         card3.setColor("#abc123");
         card3.setCreatedBy(currentUser.getUserId());
 
-        Assoc assoc = new Assoc(1,1,AssocType.BLOCKS,2,null);
+        Assoc assoc = new Assoc(1, 1, AssocType.BLOCKS, 2, null);
 
         //action
         when(cardRepository.findById(1)).thenReturn(Optional.of(card1));
@@ -684,7 +683,7 @@ public class CardServiceImplTest {
         card3.setColor("#abc123");
         card3.setCreatedBy(currentUser.getUserId());
 
-        Assoc assoc = new Assoc(1,1,AssocType.BLOCKED_BY,2,null);
+        Assoc assoc = new Assoc(1, 1, AssocType.BLOCKED_BY, 2, null);
 
         //action
         when(cardRepository.findById(1)).thenReturn(Optional.of(card1));
@@ -714,21 +713,11 @@ public class CardServiceImplTest {
         card.setCreatedBy(8);
 
         //action
-        when(cardRepository.findById(2))
+        when(cardRepository.findById(1))
                 .thenReturn(Optional.of(card));
 
         // check
-        assertThrows(AccessDeniedException.class, () -> cardService.getCardAvailAssoc(2, AssocType.BLOCKS));
+        assertThrows(AccessDeniedException.class, () -> cardService.getCardAvailAssoc(1, AssocType.BLOCKS));
     }
 
-
-
-
-
-
-
-
-
-
 }
-
