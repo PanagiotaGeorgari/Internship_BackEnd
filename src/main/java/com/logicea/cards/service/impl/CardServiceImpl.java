@@ -39,7 +39,8 @@ public class CardServiceImpl implements CardService {
         User user = getCurrentUser();
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
 
-        Card mainCard = cardRepository.findById(id).isPresent() ? cardRepository.findById(id).get() : null;
+        Card mainCard = cardRepository.findById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
 
         if (!isAdmin) {
             assert mainCard != null;
@@ -76,73 +77,57 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public Card replaceCard(Card newCard, int id) throws CardNotFoundException {
-        Optional<Card> card = cardRepository.findById(id);
-        Card cardObject = card.get();
-        if (card.isEmpty()) { //if cardId does  not exist
-            throw new CardNotFoundException(id);
-        } else {
-            User user = getCurrentUser();//take user
-            boolean isAdmin = user.getRole() == UserRole.ADMIN;
-            if (isAdmin) { //if is admin he can update any card
-                cardObject.setName(newCard.getName());
-                cardObject.setDescription(newCard.getDescription());
-                cardObject.setColor(newCard.getColor());
-                cardObject.setStatus(newCard.getStatus());
-                cardObject.setUpdatedBy(user.getUserId());
-                cardObject.setUpdatedAt(Instant.now());
-                Card updatedCard = cardRepository.save(cardObject);
-                return updatedCard;
-            } else { //if user is member
+        Card cardObject = cardRepository.findById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
+        User user = getCurrentUser();//take user
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
+        if (isAdmin) { //if is admin he can update any card
+            return getCard(newCard, cardObject, user);
+        } else { //if user is member
                 if (cardObject.getCreatedBy() == user.getUserId()) { //check if cardObject belongs  to user
-                    cardObject.setName(newCard.getName());
-                    cardObject.setDescription(newCard.getDescription());
-                    cardObject.setColor(newCard.getColor());
-                    cardObject.setStatus(newCard.getStatus());
-                    cardObject.setUpdatedBy(user.getUserId());
-                    cardObject.setUpdatedAt(Instant.now());
-                    Card updatedCard = cardRepository.save(cardObject);
-                    return updatedCard;
+                    return getCard(newCard, cardObject, user);
                 } else {
                     throw new AccessDeniedException("You do not have permission to access this resource"); //if card doesn't belong to this user
                 }
-            }
         }
+    }
+
+    private Card getCard(Card newCard, Card cardObject, User user) {
+        cardObject.setName(newCard.getName());
+        cardObject.setDescription(newCard.getDescription());
+        cardObject.setColor(newCard.getColor());
+        cardObject.setStatus(newCard.getStatus());
+        cardObject.setUpdatedBy(user.getUserId());
+        cardObject.setUpdatedAt(Instant.now());
+        return cardRepository.save(cardObject);
     }
 
     @Override
     public Card partialUpdateCard(Card updates, int id) throws CardNotFoundException {
-        Optional<Card> card = cardRepository.findById(id);
-        Card cardObject = card.get();
-
-        if (card.isEmpty()) { //if cardId does  not exist
-            throw new CardNotFoundException(id);
-        } else { //cardId exists
-            User user = getCurrentUser();//get connected user
-            boolean isAdmin = user.getRole() == UserRole.ADMIN;
-            if (isAdmin) { //user role is Admin
-                if (updates.getName() != null) cardObject.setName(updates.getName()); //finds the updated field
-                if (updates.getDescription() != null) cardObject.setDescription(updates.getDescription());
-                if (updates.getColor() != null) cardObject.setColor(updates.getColor());
-                if (updates.getStatus() != null) cardObject.setStatus(updates.getStatus());
-                cardObject.setUpdatedBy(user.getUserId());
-                cardObject.setUpdatedAt(Instant.now());
-                Card updatedCard = cardRepository.save(cardObject);
-                return updatedCard;
-            } else {
+        Card cardObject = cardRepository.findById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
+        //cardId exists
+        User user = getCurrentUser();//get connected user
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
+        if (isAdmin) { //user role is Admin
+            return getCardPartial(updates, cardObject, user);
+        } else {
                 if (cardObject.getCreatedBy() == user.getUserId()) { //check if cardObject belongs to user
-                    if (updates.getName() != null) cardObject.setName(updates.getName()); //finds the updated field
-                    if (updates.getDescription() != null) cardObject.setDescription(updates.getDescription());
-                    if (updates.getColor() != null) cardObject.setColor(updates.getColor());
-                    if (updates.getStatus() != null) cardObject.setStatus(updates.getStatus());
-                    cardObject.setUpdatedBy(user.getUserId());
-                    cardObject.setUpdatedAt(Instant.now());
-                    Card updatedCard = cardRepository.save(cardObject);
-                    return updatedCard;
+                    return getCardPartial(updates, cardObject, user);
                 } else {
                     throw new AccessDeniedException("You do not have permission to access this resource"); //if card doesn't belong to this user
                 }
-            }
         }
+    }
+
+    private Card getCardPartial(Card updates, Card cardObject, User user) {
+        if (updates.getName() != null) cardObject.setName(updates.getName()); //finds the updated field
+        if (updates.getDescription() != null) cardObject.setDescription(updates.getDescription());
+        if (updates.getColor() != null) cardObject.setColor(updates.getColor());
+        if (updates.getStatus() != null) cardObject.setStatus(updates.getStatus());
+        cardObject.setUpdatedBy(user.getUserId());
+        cardObject.setUpdatedAt(Instant.now());
+        return cardRepository.save(cardObject);
     }
 
 
@@ -182,9 +167,13 @@ public class CardServiceImpl implements CardService {
         if (isAdmin) {
             cards.addAll(cardRepository.findAll());
         } else {
-            if (cardRepository.findById(cardId).get().getCreatedBy() != user.getUserId()) {
+            Card card = cardRepository.findById(cardId)
+                    .orElseThrow(() -> new CardNotFoundException(cardId));
+
+            if (card.getCreatedBy() != user.getUserId()) {
                 throw new AccessDeniedException("Members can only associate their own cards!");
             }
+
             cards.addAll(cardRepository.findByCreatedBy(user.getUserId()));
         }
 
@@ -207,9 +196,10 @@ public class CardServiceImpl implements CardService {
 
     }
 
-    private User getCurrentUser() {
+    public User getCurrentUser() {
         return (User) SecurityContextHolder.getContext(
         ).getAuthentication().getPrincipal();
     }
+
 
 }

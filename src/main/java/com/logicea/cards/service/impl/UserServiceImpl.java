@@ -31,7 +31,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public boolean validateUser(String email, String password) {
-        User user = userRepository.findByEmail(email).get();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         String passFromBase = user.getPassword();
         return passwordEncoder.matches(password, passFromBase);
     }

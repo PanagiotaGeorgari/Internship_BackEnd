@@ -63,10 +63,8 @@ public class AssocServiceImpl implements AssocService {
             boolean ownerLeftCard = lcard.getCreatedBy() == user.getUserId(); //check if cards belong to this member
             boolean ownerRightCard = rcard.getCreatedBy() == user.getUserId();
             System.out.println("member newAssoc");
-            if (!ownerLeftCard || !ownerRightCard) { // if cards do not belong to the same user
-                return false;
-            }
-            return true;
+            // if cards do not belong to the same user
+            return ownerLeftCard && ownerRightCard;
         }
     }
 
@@ -82,11 +80,7 @@ public class AssocServiceImpl implements AssocService {
                 lcard.getCardId(),
                 type
         );
-        if (existingAssoc.isPresent() || inversedexistingAssoc.isPresent()) {
-            return false;
-        } else {
-            return true;
-        }
+        return existingAssoc.isEmpty() && inversedexistingAssoc.isEmpty();
 
     }
 
@@ -135,7 +129,7 @@ public class AssocServiceImpl implements AssocService {
 
     }
 
-    private User getCurrentUser() {
+    public User getCurrentUser() {
         return (User) SecurityContextHolder.getContext(
         ).getAuthentication().getPrincipal();
     }
