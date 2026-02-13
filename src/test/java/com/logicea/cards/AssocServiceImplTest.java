@@ -9,6 +9,7 @@ import com.logicea.cards.enums.UserRole;
 import com.logicea.cards.repository.AssocRepository;
 import com.logicea.cards.repository.CardRepository;
 import com.logicea.cards.service.impl.AssocServiceImpl;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +18,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collection;
@@ -37,6 +39,12 @@ public class AssocServiceImplTest {
     @InjectMocks
     @Spy
     private AssocServiceImpl assocService;
+
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
 
     @Test
     void newAssocRightNotFound() {
@@ -346,6 +354,175 @@ public class AssocServiceImplTest {
         assertThrows(AssocNotFoundException.class, () -> assocService.getAssoc(rcardId, lcardId));
 
 
+    }
+
+    @Test
+    void uniqueAssocAlreadyExist() {
+        //data
+        Card card1 = new Card();
+        card1.setCardId(1);
+        Card card2 = new Card();
+        card2.setCardId(2);
+        Assoc assoc = new Assoc(1, 1, AssocType.BLOCKS, 2, null);
+        Assoc assoc_inv = new Assoc(2, 2, AssocType.BLOCKED_BY, 1, null);
+        //action
+        when(assocRepository.findByLcardIdAndRcardIdAndAssoc(1, 2, AssocType.BLOCKS))
+                .thenReturn(Optional.of(assoc));
+        when(assocRepository.findByLcardIdAndRcardIdAndAssoc(2, 1, AssocType.BLOCKS))
+                .thenReturn(Optional.of(assoc_inv));
+        boolean result = assocService.uniqueAssoc(card1, card2, AssocType.BLOCKS);
+        //check
+        assertFalse(result);
+
+    }
+
+    @Test
+    void uniqueAssocSuccess() {
+        //data
+        Card card1 = new Card();
+        card1.setCardId(1);
+        Card card2 = new Card();
+        card2.setCardId(2);
+        //action
+        when(assocRepository.findByLcardIdAndRcardIdAndAssoc(1, 2, AssocType.BLOCKS))
+                .thenReturn(Optional.empty());
+        when(assocRepository.findByLcardIdAndRcardIdAndAssoc(2, 1, AssocType.BLOCKS))
+                .thenReturn(Optional.empty());
+        boolean result = assocService.uniqueAssoc(card1, card2, AssocType.BLOCKS);
+        //check
+        assertTrue(result);
+
+    }
+
+    @Test
+    void deleteAssocNotFound() {
+        //data
+        int assocId = 1;
+        User user = new User();
+        user.setUserId(1);
+        user.setRole(UserRole.ADMIN);
+
+        //action
+        Authentication authentication = mock(Authentication.class); //getcurrentUser() mocked
+        when(authentication.getPrincipal())
+                .thenReturn(user);
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        when(assocRepository.findById(
+                assocId
+        )).thenReturn(
+                Optional.empty()
+        );
+
+        //check
+        assertThrows(AssocNotFoundException.class, () -> assocService.deleteAssoc(assocId));
+
+    }
+
+    @Test
+    void deleteAssocAdmin() {
+        //data
+        User user = new User();
+        user.setUserId(1);
+        user.setRole(UserRole.ADMIN);
+        Assoc assoc = new Assoc(1, 1, AssocType.BLOCKS, 2, null);
+        Assoc assocInv = new Assoc(2, 2, AssocType.BLOCKS, 1, null);
+
+
+        //action
+        Authentication authentication = mock(Authentication.class);// getcurrent User
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+
+        when(assocRepository.findById(1))
+                .thenReturn(Optional.of(assoc));
+
+        when(assocRepository.findByRcardIdAndLcardId(1, 2)) //getAssoc
+                .thenReturn(Optional.of(assocInv));
+
+        //result
+        assocService.deleteAssoc(1);
+
+    }
+
+    @Test
+    void deleteAssocMember() {
+        //data
+        User user = new User();
+        user.setUserId(1);
+        user.setRole(UserRole.MEMBER);
+        Card lcard = new Card();
+        lcard.setCardId(1);
+        lcard.setCreatedBy(1);
+        Card rcard = new Card();
+        rcard.setCardId(2);
+        rcard.setCreatedBy(1);
+        Assoc assoc = new Assoc(1, 1, AssocType.BLOCKS, 2, null);
+        Assoc assocInv = new Assoc(2, 2, AssocType.BLOCKS, 1, null);
+
+        //action
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal())
+                .thenReturn(user);
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        when(cardRepository.findById(1))
+                .thenReturn(Optional.of(lcard));
+        when(cardRepository.findById(2))
+                .thenReturn(Optional.of(rcard));
+
+        when(assocRepository.findById(1))
+                .thenReturn(Optional.of(assoc));
+        when(assocRepository.findByRcardIdAndLcardId(1, 2)) //getAssoc
+                .thenReturn(Optional.of(assocInv));
+
+
+        assocService.deleteAssoc(1);
+    }
+
+    @Test
+    void deleteAssocMemberNotOwner() {
+
+        //data
+        User user = new User();
+        user.setUserId(1);
+        user.setRole(UserRole.MEMBER);
+        Card lcard = new Card();
+        lcard.setCardId(1);
+        lcard.setCreatedBy(2);
+        Card rcard = new Card();
+        rcard.setCardId(2);
+        rcard.setCreatedBy(3);
+        Assoc assoc = new Assoc(1, 1, AssocType.BLOCKS, 2, null);
+
+
+        //action
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal())
+                .thenReturn(user);
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        when(assocRepository.findById(1))
+                .thenReturn(Optional.of(assoc));
+
+        //avoid UnnecessaryStubbingException when we try to run cardRepository.findById(1)
+        lenient().when(cardRepository.findById(1)).thenReturn(Optional.of(lcard));
+        lenient().when(cardRepository.findById(2)).thenReturn(Optional.of(rcard));
+
+        //check
+        assertThrows(AccessDeniedException.class, () -> assocService.deleteAssoc(1));
     }
 
 
