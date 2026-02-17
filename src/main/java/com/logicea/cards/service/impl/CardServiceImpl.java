@@ -82,17 +82,17 @@ public class CardServiceImpl implements CardService {
         User user = getCurrentUser();//take user
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
         if (isAdmin) { //if is admin he can update any card
-            return getCard(newCard, cardObject, user);
+            return saveCard(newCard, cardObject, user);
         } else { //if user is member
                 if (cardObject.getCreatedBy() == user.getUserId()) { //check if cardObject belongs  to user
-                    return getCard(newCard, cardObject, user);
+                    return saveCard(newCard, cardObject, user);
                 } else {
                     throw new AccessDeniedException("You do not have permission to access this resource"); //if card doesn't belong to this user
                 }
         }
     }
 
-    private Card getCard(Card newCard, Card cardObject, User user) {
+    private Card saveCard(Card newCard, Card cardObject, User user) {
         cardObject.setName(newCard.getName());
         cardObject.setDescription(newCard.getDescription());
         cardObject.setColor(newCard.getColor());
@@ -110,17 +110,17 @@ public class CardServiceImpl implements CardService {
         User user = getCurrentUser();//get connected user
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
         if (isAdmin) { //user role is Admin
-            return getCardPartial(updates, cardObject, user);
+            return savePartialCard(updates, cardObject, user);
         } else {
                 if (cardObject.getCreatedBy() == user.getUserId()) { //check if cardObject belongs to user
-                    return getCardPartial(updates, cardObject, user);
+                    return savePartialCard(updates, cardObject, user);
                 } else {
                     throw new AccessDeniedException("You do not have permission to access this resource"); //if card doesn't belong to this user
                 }
         }
     }
 
-    private Card getCardPartial(Card updates, Card cardObject, User user) {
+    private Card savePartialCard(Card updates, Card cardObject, User user) {
         if (updates.getName() != null) cardObject.setName(updates.getName()); //finds the updated field
         if (updates.getDescription() != null) cardObject.setDescription(updates.getDescription());
         if (updates.getColor() != null) cardObject.setColor(updates.getColor());
