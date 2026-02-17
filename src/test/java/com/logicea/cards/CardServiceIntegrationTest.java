@@ -81,7 +81,7 @@ class CardServiceIntegrationTest {
         card2 = cardRepository.save(card2);
 
         Assoc assoc = new Assoc();
-        assoc.setLcardId(card1.getCardId());  // σωστό
+        assoc.setLcardId(card1.getCardId());
         assoc.setRcardId(card2.getCardId());
         assoc.setAssoc(AssocType.BLOCKS);
 
@@ -117,7 +117,7 @@ class CardServiceIntegrationTest {
         card2 = cardRepository.save(card2);
 
         Assoc assoc = new Assoc();
-        assoc.setLcardId(card1.getCardId());  // σωστό
+        assoc.setLcardId(card1.getCardId());
         assoc.setRcardId(card2.getCardId());
         assoc.setAssoc(AssocType.BLOCKS);
 
@@ -316,8 +316,8 @@ class CardServiceIntegrationTest {
 
         // check
         assertEquals("updated field", result.getName());
-        assertEquals("new card for test update admin", result.getDescription()); // δεν αλλάζει
-        assertEquals("#abc123", result.getColor()); // δεν αλλάζει
+        assertEquals("new card for test update admin", result.getDescription());
+        assertEquals("#abc123", result.getColor()); 
     }
 
     @Test
