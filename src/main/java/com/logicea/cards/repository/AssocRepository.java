@@ -24,8 +24,7 @@ public interface AssocRepository extends JpaRepository<Assoc, Integer> {
             @Param("assocType") AssocType assocType
     );
 
-    @Query("SELECT new com.logicea.cards.entity.Assoc(assoc.id,assoc.lcardId, assoc.assoc, assoc.rcardId , " +
-            "new com.logicea.cards.dto.CardSummaryDto(c.cardId, c.name)) " +
+    @Query(" SELECT new com.logicea.cards.dto.AssocDto(assoc.id,assoc.lcardId,assoc.rcardId,assoc.assoc,new com.logicea.cards.dto.CardSummaryDto(c.cardId, c.name))"+
             "FROM Assoc assoc " +
             "JOIN Card c ON assoc.rcardId = c.cardId " +
             "WHERE assoc.lcardId = :id")
