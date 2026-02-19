@@ -1,5 +1,7 @@
-package com.logicea.cards;
+package com.logicea.cards.integration;
 
+import com.logicea.cards.CardNotFoundException;
+import com.logicea.cards.GetByIdResponse;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
@@ -317,7 +319,7 @@ class CardServiceIntegrationTest {
         // check
         assertEquals("updated field", result.getName());
         assertEquals("new card for test update admin", result.getDescription());
-        assertEquals("#abc123", result.getColor()); 
+        assertEquals("#abc123", result.getColor());
     }
 
     @Test

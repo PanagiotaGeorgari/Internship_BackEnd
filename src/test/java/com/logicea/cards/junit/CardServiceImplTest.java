@@ -1,5 +1,7 @@
-package com.logicea.cards;
+package com.logicea.cards.junit;
 
+import com.logicea.cards.CardNotFoundException;
+import com.logicea.cards.GetByIdResponse;
 import com.logicea.cards.dto.AssocDto;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;

@@ -1,4 +1,4 @@
-package com.logicea.cards;
+package com.logicea.cards.integration;
 
 import com.logicea.cards.entity.User;
 import com.logicea.cards.enums.UserRole;
