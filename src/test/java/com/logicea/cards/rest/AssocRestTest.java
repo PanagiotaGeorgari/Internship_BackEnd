@@ -291,7 +291,7 @@ public class AssocRestTest {
         card1.setCreatedBy(user.getUserId());
         cardRepository.save(card1);
 
-        card2.setCreatedBy(50); // άλλος χρήστης
+        card2.setCreatedBy(50);
         cardRepository.save(card2);
 
         Assoc assoc = new Assoc();
@@ -304,7 +304,7 @@ public class AssocRestTest {
                         .with(csrf())
                         .with(authentication(new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())))
                 )
-                .andExpect(status().isForbidden()); // 403 AccessDenied
+                .andExpect(status().isForbidden());
     }
 
 }
