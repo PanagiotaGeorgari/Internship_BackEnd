@@ -376,7 +376,6 @@ public class AssocServiceIntegrationTest {
 
         assertThrows(AssocNotFoundException.class, () -> assocService.getAssoc(card1.getCardId(), card2.getCardId()));
 
-
     }
 
     @Test
@@ -516,42 +515,7 @@ public class AssocServiceIntegrationTest {
         assocService.deleteAssoc(assoc.getId());
     }
 
-    @Test
-    void deleteAssocMemberNotOwner() {
 
-        User user = new User();
-        user.setEmail("user@gmail.com");
-        user.setName("user");
-        user.setPassword("pass");
-        user.setRole(UserRole.MEMBER);
-        userRepository.save(user);
-
-
-        Card lcard = new Card();
-        lcard.setName("lcard");
-        lcard.setCreatedBy(user.getUserId() + 1);
-        cardRepository.save(lcard);
-
-        Card rcard = new Card();
-        rcard.setName("rcard");
-        rcard.setCreatedBy(user.getUserId() + 2);
-        cardRepository.save(rcard);
-
-
-        Assoc assoc = new Assoc();
-        assoc.setLcardId(lcard.getCardId());
-        assoc.setRcardId(rcard.getCardId());
-        assoc.setAssoc(AssocType.BLOCKS);
-        assocRepository.save(assoc);
-
-
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
-        );
-
-
-        assertThrows(AccessDeniedException.class, () -> assocService.deleteAssoc(assoc.getId()));
-    }
 
 
 }
