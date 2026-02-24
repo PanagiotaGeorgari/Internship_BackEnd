@@ -1,4 +1,4 @@
-package com.logicea.cards.rest;
+package com.logicea.cards.controller;
 
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest //upload the spring
 @ActiveProfiles("test")//use application-test.properties
 @Transactional//clean the db after each test
-public class AssocRestTest {
+public class AssocControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

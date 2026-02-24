@@ -1,4 +1,4 @@
-package com.logicea.cards.integration;
+package com.logicea.cards.service.integration;
 
 import com.logicea.cards.AssocAlreadyExistsException;
 import com.logicea.cards.AssocNotFoundException;
@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest //upload the spring
 @ActiveProfiles("test")//use application-test.properties
 @Transactional//clean the db after each test
-public class AssocServiceIntegrationTest {
+public class AssocServicedb {
     @Autowired
     private AssocRepository assocRepository;
     @Autowired

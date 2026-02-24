@@ -1,4 +1,4 @@
-package com.logicea.cards.rest;
+package com.logicea.cards.controller;
 
 import com.logicea.cards.entity.User;
 import com.logicea.cards.enums.UserRole;
@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest //upload the spring
 @ActiveProfiles("test")//use application-test.properties
 @Transactional//clean the db after each test
-public class UserRestTest {
+public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired

@@ -1,4 +1,4 @@
-package com.logicea.cards.junit;
+package com.logicea.cards.service.unit;
 
 import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.GetByIdResponse;
@@ -34,7 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class) // activate mockito into junit
-public class CardServiceImplTest {
+public class CardServiceTest {
     //same fields with cardServiceImpl
     @Mock //dummy
     private CardRepository cardRepository;
