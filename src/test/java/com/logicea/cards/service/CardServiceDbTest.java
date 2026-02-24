@@ -1,4 +1,4 @@
-package com.logicea.cards.service.integration;
+package com.logicea.cards.service;
 
 import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.GetByIdResponse;
@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest //upload the spring
 @ActiveProfiles("test")//use application-test.properties
 @Transactional//clean the db after each test
-class CardServicedb {
+class CardServiceDbTest {
 
     @Autowired
     private CardServiceImpl cardService;

@@ -1,9 +1,8 @@
-package com.logicea.cards.service.integration;
+package com.logicea.cards.service;
 
 import com.logicea.cards.entity.User;
 import com.logicea.cards.enums.UserRole;
 import com.logicea.cards.repository.UserRepository;
-import com.logicea.cards.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest //upload the spring
 @ActiveProfiles("test")//use application-test.properties
 @Transactional//clean the db after each test
-public class UserServicedb {
+public class UserServiceDbTest {
     @Autowired
     private UserService userService;
     @Autowired

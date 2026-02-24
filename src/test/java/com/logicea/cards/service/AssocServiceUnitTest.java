@@ -1,4 +1,4 @@
-package com.logicea.cards.service.unit;
+package com.logicea.cards.service;
 
 import com.logicea.cards.AssocAlreadyExistsException;
 import com.logicea.cards.AssocNotFoundException;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class) // activate mockito into junit
 
-public class AssocServiceTest {
+public class AssocServiceUnitTest {
     @Mock
     private AssocRepository assocRepository;
     @Mock

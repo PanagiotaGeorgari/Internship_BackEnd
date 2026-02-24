@@ -1,4 +1,4 @@
-package com.logicea.cards.service.unit;
+package com.logicea.cards.service;
 
 import com.logicea.cards.CardNotFoundException;
 import com.logicea.cards.GetByIdResponse;
@@ -10,7 +10,6 @@ import com.logicea.cards.enums.AssocType;
 import com.logicea.cards.enums.CardStatus;
 import com.logicea.cards.enums.UserRole;
 import com.logicea.cards.repository.CardRepository;
-import com.logicea.cards.service.AssocService;
 import com.logicea.cards.service.impl.CardServiceImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,15 +25,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class) // activate mockito into junit
-public class CardServiceTest {
+public class CardServiceUnitTest {
     //same fields with cardServiceImpl
     @Mock //dummy
     private CardRepository cardRepository;

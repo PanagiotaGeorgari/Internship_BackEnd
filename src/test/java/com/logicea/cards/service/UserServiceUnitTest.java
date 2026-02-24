@@ -1,4 +1,4 @@
-package com.logicea.cards.service.unit;
+package com.logicea.cards.service;
 
 import com.logicea.cards.entity.User;
 import com.logicea.cards.repository.UserRepository;
@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class) // activate mockito into junit
-public class UserServiceTest {
+public class UserServiceUnitTest {
 
     @Mock
     private UserRepository userRepository;
