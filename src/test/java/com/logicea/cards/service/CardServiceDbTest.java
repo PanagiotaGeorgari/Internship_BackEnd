@@ -137,7 +137,7 @@ class CardServiceDbTest {
     @Test
     void getByIdNotFound() throws CardNotFoundException {
 
-        assertThrows(CardNotFoundException.class, () -> cardService.getById(20));
+        assertThrows(CardNotFoundException.class, () -> cardService.getById(80));
 
     }
 
@@ -175,7 +175,7 @@ class CardServiceDbTest {
 
     @Test
     void deleteCardNotFound() throws CardNotFoundException {
-        assertThrows(CardNotFoundException.class, () -> cardService.deleteCard(20));
+        assertThrows(CardNotFoundException.class, () -> cardService.deleteCard(80));
     }
 
     @Test
@@ -218,7 +218,16 @@ class CardServiceDbTest {
         card.setName("new card1");
         card.setDescription("new description");
         card.setColor("#abc123");
-        card.setCreatedBy(50);
+
+        User otherUser = new User();
+        otherUser.setEmail("other@gmail.com");
+        otherUser.setName("other");
+        otherUser.setPassword("pass");
+        otherUser.setRole(UserRole.MEMBER);
+
+        userRepository.save(otherUser);
+
+        card.setCreatedBy(otherUser.getUserId());
         //save to H2
         cardRepository.save(card);
         //check
@@ -504,7 +513,7 @@ class CardServiceDbTest {
 
         // check
         assertEquals(1, result.size());
-        assertEquals(card3.getCardId(), result.getFirst().getCardId());
+        assertEquals(card3.getCardId(), result.get(0).getCardId());
 
     }
 
@@ -548,7 +557,7 @@ class CardServiceDbTest {
         List<Card> result = cardService.getCardAvailAssoc(card1Id, AssocType.BLOCKS);
 
         assertEquals(1, result.size());
-        assertEquals(card3Id, result.getFirst().getCardId());
+        assertEquals(card3Id, result.get(0).getCardId());
     }
 
 
@@ -610,7 +619,7 @@ class CardServiceDbTest {
 
 
         assertEquals(1, result.size());
-        assertEquals(card3.getCardId(), result.getFirst().getCardId());
+        assertEquals(card3.getCardId(), result.get(0).getCardId());
     }
 
 
