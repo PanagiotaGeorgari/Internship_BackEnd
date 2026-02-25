@@ -60,10 +60,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            sendUnauthorized(response, "Unauthorized access.(Token is missing !");
-            return;
-        }
 
         filterChain.doFilter(request, response);
     }
