@@ -611,7 +611,7 @@ public class CardServiceUnitTest {
 
         //check
         assertEquals(1, result.size());
-        assertEquals(3, result.getFirst().getCardId());
+        assertEquals(3, result.get(0).getCardId());
     }
 
     @Test
@@ -654,7 +654,7 @@ public class CardServiceUnitTest {
         List<Card> result = cardService.getCardAvailAssoc(1, AssocType.BLOCKS);
         //check
         assertEquals(1, result.size());
-        assertEquals(3, result.getFirst().getCardId());
+        assertEquals(3, result.get(0).getCardId());
 
     }
 
@@ -698,7 +698,7 @@ public class CardServiceUnitTest {
         List<Card> result = cardService.getCardAvailAssoc(1, AssocType.BLOCKS);
         //check
         assertEquals(1, result.size());
-        assertEquals(3, result.getFirst().getCardId());
+        assertEquals(3, result.get(0).getCardId());
 
     }
 
