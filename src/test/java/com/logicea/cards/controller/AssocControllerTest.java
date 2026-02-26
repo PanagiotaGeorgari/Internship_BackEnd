@@ -260,6 +260,8 @@ public class AssocControllerTest {
     @Test
     void deleteAssocMember() throws Exception {
 
+        user.setRole(UserRole.MEMBER);
+
         Assoc assoc = new Assoc();
         assoc.setLcardId(card2.getCardId());
         assoc.setRcardId(card1.getCardId());
@@ -280,7 +282,7 @@ public class AssocControllerTest {
                 .andExpect(status().isOk());
 
         assertFalse(assocRepository.findById(assoc.getId()).isPresent());
-        assertFalse(assocRepository.findById(assoc.getId()).isPresent());
+        assertFalse(assocRepository.findById(assoc2.getId()).isPresent());
 
     }
 
