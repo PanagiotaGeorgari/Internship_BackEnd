@@ -1,5 +1,6 @@
 package com.logicea.cards.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
@@ -20,7 +21,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
@@ -37,6 +40,8 @@ public class AssocControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
     private AssocRepository assocRepository;
     @Autowired
     private CardRepository cardRepository;
@@ -45,38 +50,44 @@ public class AssocControllerTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private User user;
+    private User admin;
+    private User member;
     private Card card1;
     private Card card2;
 
     @BeforeEach
     void setup() {
-        user = new User();
-        user.setName("user");
-        user.setEmail("user@gmail.com");
-        user.setPassword(passwordEncoder.encode("password"));
-        user.setRole(UserRole.ADMIN);
-        userRepository.save(user);
+        admin = new User();
+        admin.setRole(UserRole.ADMIN);
+        admin.setName("admin");
+        admin.setEmail("admin@gmail.com");
+        admin.setPassword(passwordEncoder.encode("pass"));
+        userRepository.save(admin);
+
+        member = new User();
+        member.setRole(UserRole.MEMBER);
+        member.setName("member");
+        member.setEmail("member@gmail.com");
+        member.setPassword(passwordEncoder.encode("pass"));
+        userRepository.save(member);
 
         card1 = new Card();
         card1.setName("card1");
-        card1.setCreatedBy(user.getUserId());
+        card1.setCreatedBy(admin.getUserId());
         cardRepository.save(card1);
 
         card2 = new Card();
         card2.setName("card2");
-        card2.setCreatedBy(user.getUserId());
+        card2.setCreatedBy(admin.getUserId());
         cardRepository.save(card2);
     }
 
     @Test
     void newAssocRightNotFound() throws Exception {
+        Map<String, Object> body = createjsonBody(1, card1.getCardId(), 999, "BLOCKS");
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(String.format(
-                                "{\"id\":1,\"lcardId\":%d,\"rcardId\":999,\"assoc\":\"BLOCKS\"}",
-                                card1.getCardId()
-                        ))
+                        .content(objectMapper.writeValueAsString(body))
                         .with(csrf())
                         .with(user("user").roles("ADMIN")))
                 .andExpect(status().isNotFound());
@@ -84,12 +95,10 @@ public class AssocControllerTest {
 
     @Test
     void newAssocLeftNotFound() throws Exception {
+        Map<String, Object> body = createjsonBody(1, 999, card2.getCardId(), "BLOCKS");
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(String.format(
-                                "{\"id\":1,\"lcardId\":999,\"rcardId\":%d,\"assoc\":\"BLOCKS\"}",
-                                card2.getCardId()
-                        ))
+                        .content(objectMapper.writeValueAsString(body))
                         .with(csrf())
                         .with(user("user").roles("ADMIN")))
                 .andExpect(status().isNotFound());
@@ -98,7 +107,6 @@ public class AssocControllerTest {
     @Test
     void newAssocAccessDenied() throws Exception {
 
-        user.setRole(UserRole.MEMBER);
         card2.setCreatedBy(50);
 
         Assoc assoc = new Assoc();
@@ -106,15 +114,12 @@ public class AssocControllerTest {
         assoc.setRcardId(card1.getCardId());
         assoc.setAssoc(AssocType.BLOCKS);
 
-
+        Map<String, Object> body = createjsonBody(1, card2.getCardId(), card1.getCardId(), "BLOCKS");
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(String.format(
-                                "{\"id\":1,\"lcardId\":%d,\"rcardId\":%d,\"assoc\":\"BLOCKS\"}",
-                                card2.getCardId(), card1.getCardId()
-                        ))
+                        .content(objectMapper.writeValueAsString(body))
                         .with(csrf())
-                        .with(authentication(new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))))))
+                        .with(authentication(new UsernamePasswordAuthenticationToken(member, null, List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))))))
                 .andExpect(status().isForbidden());
     }
 
@@ -127,15 +132,13 @@ public class AssocControllerTest {
         assoc.setAssoc(AssocType.BLOCKS);
         assocRepository.save(assoc);
 
+        Map<String, Object> body = createjsonBody(4, card1.getCardId(), card2.getCardId(), "BLOCKS");
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(String.format(
-                                "{\"id\":4,\"lcardId\":%d,\"rcardId\":%d,\"assoc\":\"BLOCKS\"}",
-                                card1.getCardId(), card2.getCardId()
-                        ))
+                        .content(objectMapper.writeValueAsString(body))
                         .with(csrf())
                         .with(authentication(new UsernamePasswordAuthenticationToken(
-                                user, null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                                admin, null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
                         ))))
                 .andExpect(status().isConflict())
                 .andExpect(content().string("Assoc Already exists!"));
@@ -144,23 +147,21 @@ public class AssocControllerTest {
     @Test
     void newAssocSuccess() throws Exception {
 
+        Map<String, Object> body = createjsonBody(1, card1.getCardId(), card2.getCardId(), "BLOCKS");
         Card lcard = new Card();
         lcard.setName("card1");
-        lcard = cardRepository.save(lcard);
+
 
         Card rcard = new Card();
         rcard.setName("card2");
-        rcard = cardRepository.save(rcard);
+
 
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(String.format(
-                                "{\"id\":1,\"lcardId\":%d,\"rcardId\":%d,\"assoc\":\"BLOCKS\"}",
-                                lcard.getCardId(), rcard.getCardId()
-                        ))
+                        .content(objectMapper.writeValueAsString(body))
                         .with(csrf())
                         .with(authentication(
-                                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())))
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ids[0]").value(1))
@@ -169,13 +170,13 @@ public class AssocControllerTest {
 
     @Test
     void validateOwnerAdmin() throws Exception {
+        Map<String, Object> body = createjsonBody(0L, card1.getCardId(), card2.getCardId(), "BLOCKS");
 
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(String.format("{\"id\":0,\"lcardId\":%d,\"rcardId\":%d,\"assoc\":\"BLOCKS\"}", card1.getCardId(), card2.getCardId()))
-                        .with(csrf())
+                        .content(objectMapper.writeValueAsString(body)).with(csrf())
                         .with(authentication(
-                                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
                         )))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ids.length()").value(2));
@@ -184,14 +185,17 @@ public class AssocControllerTest {
 
     @Test
     void validateOwnerMemberAccess() throws Exception {
-        user.setRole(UserRole.MEMBER);
+        card1.setCreatedBy(member.getUserId());
+        card2.setCreatedBy(member.getUserId());
+        cardRepository.save(card1);
+        cardRepository.save(card2);
 
+        Map<String, Object> body = createjsonBody(0, card1.getCardId(), card2.getCardId(), "BLOCKS");
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(String.format("{\"id\":0,\"lcardId\":%d,\"rcardId\":%d,\"assoc\":\"BLOCKS\"}", card1.getCardId(), card2.getCardId()))
-                        .with(csrf())
+                        .content(objectMapper.writeValueAsString(body)).with(csrf())
                         .with(authentication(
-                                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
                         )))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ids.length()").value(2));
@@ -200,34 +204,28 @@ public class AssocControllerTest {
 
     @Test
     void validateOwnerMemberNotAccess() throws Exception {
-        user.setRole(UserRole.MEMBER);
-        card1.setCreatedBy(user.getUserId());
+        card1.setCreatedBy(member.getUserId());
         card2.setCreatedBy(50);
+        cardRepository.save(card1);
+        cardRepository.save(card2);
+
+        Map<String, Object> body = createjsonBody(0, card1.getCardId(), card2.getCardId(), "BLOCKS");
 
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(String.format("{\"id\":0,\"lcardId\":%d,\"rcardId\":%d,\"assoc\":\"BLOCKS\"}", card1.getCardId(), card2.getCardId()))
-                        .with(csrf())
+                        .content(objectMapper.writeValueAsString(body)).with(csrf())
                         .with(authentication(
-                                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
                         )))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void deleteAssocNotFound() throws Exception {
-
-        User user = new User();
-        user.setEmail("email@gmail.com");
-        user.setName("user");
-        user.setPassword(passwordEncoder.encode("password"));
-        user.setRole(UserRole.ADMIN);
-        user = userRepository.save(user);
-
         mockMvc.perform(delete("/card-assocs/{id}", 50)
                         .with(csrf())
                         .with(authentication(
-                                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
                         )))
                 .andExpect(status().isNotFound());
     }
@@ -244,13 +242,13 @@ public class AssocControllerTest {
         Assoc inverseAssoc = new Assoc();
         inverseAssoc.setLcardId(card2.getCardId());
         inverseAssoc.setRcardId(card1.getCardId());
-        inverseAssoc.setAssoc(AssocType.BLOCKS);
+        inverseAssoc.setAssoc(AssocType.BLOCKED_BY);
         assocRepository.save(inverseAssoc);
 
         mockMvc.perform(delete("/card-assocs/{id}", assoc.getId())
                         .with(csrf())
                         .with(authentication(
-                                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()))))
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities()))))
                 .andExpect(status().isOk());
 
         assertFalse(assocRepository.findById(assoc.getId()).isPresent());
@@ -259,8 +257,10 @@ public class AssocControllerTest {
 
     @Test
     void deleteAssocMember() throws Exception {
-
-        user.setRole(UserRole.MEMBER);
+        card1.setCreatedBy(member.getUserId());
+        card2.setCreatedBy(member.getUserId());
+        cardRepository.save(card1);
+        cardRepository.save(card2);
 
         Assoc assoc = new Assoc();
         assoc.setLcardId(card2.getCardId());
@@ -271,14 +271,14 @@ public class AssocControllerTest {
         Assoc assoc2 = new Assoc();
         assoc2.setLcardId(card1.getCardId());
         assoc2.setRcardId(card2.getCardId());
-        assoc2.setAssoc(AssocType.BLOCKS);
+        assoc2.setAssoc(AssocType.BLOCKED_BY);
         assocRepository.save(assoc2);
 
 
         mockMvc.perform(delete("/card-assocs/{id}", assoc.getId())
                         .with(csrf())
                         .with(authentication(
-                                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()))))
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities()))))
                 .andExpect(status().isOk());
 
         assertFalse(assocRepository.findById(assoc.getId()).isPresent());
@@ -288,9 +288,8 @@ public class AssocControllerTest {
 
     @Test
     void deleteAssocMemberNotOwner() throws Exception {
-        user.setRole(UserRole.MEMBER);
 
-        card1.setCreatedBy(user.getUserId());
+        card1.setCreatedBy(member.getUserId());
         cardRepository.save(card1);
 
         card2.setCreatedBy(50);
@@ -304,9 +303,18 @@ public class AssocControllerTest {
 
         mockMvc.perform(delete("/card-assocs/{id}", assoc.getId())
                         .with(csrf())
-                        .with(authentication(new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())))
+                        .with(authentication(new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())))
                 )
                 .andExpect(status().isForbidden());
+    }
+
+    private Map<String, Object> createjsonBody(long id, long lcardId, long rcardId, String type) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("id", id);
+        body.put("lcardId", lcardId);
+        body.put("rcardId", rcardId);
+        body.put("assoc", type);
+        return body;
     }
 
 }
