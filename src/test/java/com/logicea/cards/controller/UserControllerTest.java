@@ -34,13 +34,6 @@ public class UserControllerTest {
     @Test
     void createUserSuccess() throws Exception {
 
-        User user = new User();
-        user.setName("user");
-        user.setPassword("pass");
-        user.setEmail("user@gmail.com");
-        user.setRole(UserRole.ADMIN);
-
-
         mockMvc.perform(post("/user-info/register")
                         .contentType("application/json")
                         .content("{\"name\":\"user\",\"password\":\"pass\",\"email\":\"user@gmail.com\",\"role\":\"ADMIN\"}"))
