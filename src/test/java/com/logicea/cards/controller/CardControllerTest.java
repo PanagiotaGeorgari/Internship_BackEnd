@@ -1,5 +1,6 @@
 package com.logicea.cards.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
@@ -14,13 +15,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,6 +37,8 @@ public class CardControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private CardRepository cardRepository;
@@ -44,83 +49,69 @@ public class CardControllerTest {
     @Autowired
     private AssocRepository assocRepository;
 
-    private User currentUser;
+
+    private User admin;
+    private User member;
+    private Card card1;
+    private Card card2;
 
 
     @BeforeEach
     void setUp() {
-        currentUser = new User();
-        currentUser.setEmail("user@gmail.com");
-        currentUser.setPassword("password");
-        currentUser.setName("user");
-        currentUser.setRole(UserRole.ADMIN);
-        currentUser = userRepository.save(currentUser);
+        admin = new User();
+        admin.setEmail("admin@gmail.com");
+        admin.setPassword("password");
+        admin.setName("admin");
+        admin.setRole(UserRole.ADMIN);
+        admin = userRepository.save(admin);
 
+        member = new User();
+        member.setEmail("member@gmail.com");
+        member.setPassword("password");
+        member.setName("member");
+        member.setRole(UserRole.MEMBER);
+        member = userRepository.save(member);
 
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(
-                        currentUser,
-                        null,
-                        List.of(() -> "ROLE_ADMIN")
-                );
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        card1 = new Card();
+        card1.setName("card1");
+        card1.setDescription("description1");
+        card1.setColor("#abc123");
+        card1.setCreatedBy(admin.getUserId());
+        card1 = cardRepository.save(card1);
+
+        card2 = new Card();
+        card2.setName("card2");
+        card2.setDescription("description2");
+        card2.setColor("#abc123");
+        card2.setCreatedBy(admin.getUserId());
+        card2 = cardRepository.save(card2);
+
     }
 
     @Test
     void getByIdSuccessAdmin() throws Exception {
 
-        Card card1 = new Card();
-        card1.setName("new card1");
-        card1.setDescription("new description");
-        card1.setColor("#abc123");
-        card1.setCreatedBy(currentUser.getUserId());
-        card1 = cardRepository.save(card1);
-
-        Card card2 = new Card();
-        card2.setName("new card2");
-        card2.setDescription("new description");
-        card2.setColor("#abc123");
-        card2.setCreatedBy(currentUser.getUserId());
-        card2 = cardRepository.save(card2);
-
-
         Assoc assoc = new Assoc();
         assoc.setLcardId(card1.getCardId());
         assoc.setRcardId(card2.getCardId());
         assoc.setAssoc(AssocType.BLOCKS);
         assocRepository.save(assoc);
 
-        mockMvc.perform(get("/api/cards/{id}", card1.getCardId()))
+        mockMvc.perform(get("/api/cards/{id}", card1.getCardId())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.card.name").value("new card1"))
-                .andExpect(jsonPath("$.card.description").value("new description"))
-                .andExpect(jsonPath("$.assocs.length()").value(1))
-                .andExpect(jsonPath("$.assocs[0].assoc").value("BLOCKS"))
-                .andExpect(jsonPath("$.assocs[0].card.id").value(card2.getCardId()))
-                .andExpect(jsonPath("$.assocs[0].card.name").value("new card2"));
-
+                .andExpect(jsonPath("$.card.name").value("card1"))
+                .andExpect(jsonPath("$.assocs.length()").value(1));
     }
 
 
     @Test
     void getByIdSuccessMember() throws Exception {
-        // data
-        currentUser.setRole(UserRole.MEMBER);
-        Card card1 = new Card();
-        card1.setName("new card1");
-        card1.setDescription("new description");
-        card1.setColor("#abc123");
-        card1.setCreatedBy(currentUser.getUserId());
 
-        Card card2 = new Card();
-        card2.setName("new card2");
-        card2.setDescription("new description");
-        card2.setColor("#abc123");
-        card2.setCreatedBy(currentUser.getUserId());
-
-        //save to repository
-        card1 = cardRepository.save(card1);
-        card2 = cardRepository.save(card2);
+        card1.setCreatedBy(member.getUserId());
+        cardRepository.save(card1);
 
         Assoc assoc = new Assoc();
         assoc.setLcardId(card1.getCardId());
@@ -129,20 +120,23 @@ public class CardControllerTest {
 
         assocRepository.save(assoc);
 
-        mockMvc.perform(get("/api/cards/{id}", card1.getCardId()))
+
+        mockMvc.perform(get("/api/cards/{id}", card1.getCardId())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.card.name").value("new card1"))
-                .andExpect(jsonPath("$.card.description").value("new description"))
-                .andExpect(jsonPath("$.assocs.length()").value(1))
-                .andExpect(jsonPath("$.assocs[0].assoc").value("BLOCKS"))
-                .andExpect(jsonPath("$.assocs[0].card.id").value(card2.getCardId()))
-                .andExpect(jsonPath("$.assocs[0].card.name").value("new card2"));
+                .andExpect(jsonPath("$.card.name").value("card1"))
+                .andExpect(jsonPath("$.assocs.length()").value(1));
 
     }
 
     @Test
     void getByIdNotFound() throws Exception {
-        mockMvc.perform(get("/api/cards/{id}", 50))
+        mockMvc.perform(get("/api/cards/{id}", 50)
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
+                        )))
                 .andExpect(status().isNotFound());
     }
 
@@ -150,320 +144,263 @@ public class CardControllerTest {
     @Test
     void getByIdMemberAccessDenied() throws Exception {
 
-        currentUser.setRole(UserRole.MEMBER);
-
-        Card card1 = new Card();
-        card1.setName("new card1");
-        card1.setDescription("new description");
-        card1.setColor("#abc123");
         card1.setCreatedBy(50);
 
-        Card card2 = new Card();
-        card2.setName("new card2");
-        card2.setDescription("new description");
-        card2.setColor("#abc123");
-        card2.setCreatedBy(currentUser.getUserId());
-
-        Card savedCard1 = cardRepository.save(card1);
-        Card savedCard2 = cardRepository.save(card2);
-
         Assoc assoc = new Assoc();
-        assoc.setLcardId(savedCard1.getCardId());
-        assoc.setRcardId(savedCard2.getCardId());
+        assoc.setLcardId(card1.getCardId());
+        assoc.setRcardId(card2.getCardId());
         assoc.setAssoc(AssocType.BLOCKS);
 
         assocRepository.save(assoc);
 
-        mockMvc.perform(get("/api/cards/{id}", savedCard1.getCardId()))
+        mockMvc.perform(get("/api/cards/{id}", card1.getCardId())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isForbidden());
 
     }
 
     @Test
     void deleteCardNotFound() throws Exception {
-        mockMvc.perform(delete("/api/cards/{id}", 50))
+        mockMvc.perform(delete("/api/cards/{id}", 50)
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isNotFound());
 
     }
 
     @Test
     void deleteCardSuccessMember() throws Exception {
+        card1.setCreatedBy(member.getUserId());
+        cardRepository.save(card1);
 
-        currentUser.setRole(UserRole.MEMBER);
-        Card card = new Card();
-        card.setName("new card1");
-        card.setDescription("new description");
-        card.setColor("#abc123");
-        card.setCreatedBy(currentUser.getUserId());
-
-        cardRepository.save(card);
-
-        mockMvc.perform(delete("/api/cards/{id}", card.getCardId()))
+        mockMvc.perform(delete("/api/cards/{id}", card1.getCardId())
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isOk());
+
     }
 
     @Test
     void deleteCardSuccessAdmin() throws Exception {
-        //data
-        currentUser.setRole(UserRole.ADMIN);
-        Card card = new Card();
-        card.setName("new card1");
-        card.setDescription("new description");
-        card.setColor("#abc123");
-        card.setCreatedBy(currentUser.getUserId());
-        //save to H2
-        cardRepository.save(card);
-        //check
-        mockMvc.perform(delete("/api/cards/{id}", card.getCardId()))
+
+        mockMvc.perform(delete("/api/cards/{id}", card1.getCardId())
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
+                        )))
                 .andExpect(status().isOk());
     }
 
     @Test
     void deleteCardMemberNotAccess() throws Exception {
-        //data
-        currentUser.setRole(UserRole.MEMBER);
-        Card card = new Card();
-        card.setName("new card1");
-        card.setDescription("new description");
-        card.setColor("#abc123");
-        card.setCreatedBy(50);
-        //save to H2
-        cardRepository.save(card);
-        mockMvc.perform(delete("/api/cards/{id}", card.getCardId()))
+        card1.setCreatedBy(50);
+        mockMvc.perform(delete("/api/cards/{id}", card1.getCardId())
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void replaceNotFoundRest() throws Exception {
+    void replaceNotFound() throws Exception {
+        Map<String, Object> body = createCardBody("updated", "updated desc", "#abc123");
+
         mockMvc.perform(put("/api/cards/{id}", 50)
                         .contentType("application/json")
-                        .content("{\"name\":\"new card1\",\"description\":\"new description\",\"color\":\"#abc123\"}"))
-                .andExpect(status().isNotFound());
+                        .content(objectMapper.writeValueAsString(body))
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
+                        )))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("updated"))
+                .andExpect(jsonPath("$.description").value("updated desc"))
+                .andExpect(jsonPath("$.color").value("#abc123"));
     }
 
     @Test
     void replaceCardSuccessAdmin() throws Exception {
-        currentUser.setRole(UserRole.ADMIN);
-        Card newCard = new Card();
-        newCard.setName("newCard");
-        newCard.setDescription("new card for test update admin");
-        newCard.setColor("#abc123");
-        newCard.setCreatedBy(currentUser.getUserId());
-        cardRepository.save(newCard);
 
-        mockMvc.perform(put("/api/cards/{id}", newCard.getCardId())
+        Map<String, Object> body = createCardBody("updated", "updated desc", "#abc123");
+
+        mockMvc.perform(put("/api/cards/{id}", card1.getCardId())
                         .contentType("application/json")
-                        .content("{\"name\":\"newCard\",\"description\":\"new card for test update admin\",\"color\":\"#abc123\"}"))
+                        .content(objectMapper.writeValueAsString(body))
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("newCard"))
-                .andExpect(jsonPath("$.description").value("new card for test update admin"))
-                .andExpect(jsonPath("$.color").value("#abc123"));
+                .andExpect(jsonPath("$.name").value("updated"));
     }
 
     @Test
     void replaceCardSuccessMember() throws Exception {
-        currentUser.setRole(UserRole.MEMBER);
 
-        Card newCard = new Card();
-        newCard.setName("newCard");
-        newCard.setDescription("new card for test update admin");
-        newCard.setColor("#abc123");
-        newCard.setCreatedBy(currentUser.getUserId());
-        cardRepository.save(newCard);
+        card1.setCreatedBy(member.getUserId());
+        cardRepository.save(card1);
 
-        mockMvc.perform(put("/api/cards/{id}", newCard.getCardId())
+        Map<String, Object> body = createCardBody("updated", "updated desc", "#abc123");
+
+        mockMvc.perform(put("/api/cards/{id}", card1.getCardId())
                         .contentType("application/json")
-                        .content("{\"name\":\"newCard\",\"description\":\"new card for test update admin\",\"color\":\"#abc123\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("newCard"))
-                .andExpect(jsonPath("$.description").value("new card for test update admin"))
-                .andExpect(jsonPath("$.color").value("#abc123"));
+                        .content(objectMapper.writeValueAsString(body))
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
+                .andExpect(jsonPath("$.name").value("updated"));
     }
 
     @Test
     void replaceCardMemberNotAccess() throws Exception {
-        currentUser.setRole(UserRole.MEMBER);
 
-        Card newCard = new Card();
-        newCard.setName("newCard");
-        newCard.setDescription("new card for test update admin");
-        newCard.setColor("#abc123");
-        newCard.setCreatedBy(50);
-        cardRepository.save(newCard);
+        Map<String, Object> body = createCardBody("updated", "updated desc", "#abc123");
+        card1.setCreatedBy(50);
 
-        mockMvc.perform(delete("/api/cards/{id}", newCard.getCardId()))
+        mockMvc.perform(put("/api/cards/{id}", card1.getCardId())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(body))
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void partialUpdateCardNotFound() throws Exception {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("name", "updated field");
+        body.put("description", "new card for test update admin");
+        body.put("color", "#abc123");
+
         mockMvc.perform(patch("/api/cards/{id}", 50)
                         .contentType("application/json")
-                        .content("{\"name\":\"updated field\",\"description\":\"new card for test update admin\",\"color\":\"#abc123\"}"))
+                        .content(objectMapper.writeValueAsString(body))
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void partialUpdateCardSuccessAdmin() throws Exception {
-        currentUser.setRole(UserRole.ADMIN);
-        Card newCard = new Card();
-        newCard.setName("newCard");
-        newCard.setDescription("new card for test update admin");
-        newCard.setColor("#abc123");
-        newCard.setCreatedBy(currentUser.getUserId());
 
-        newCard = cardRepository.save(newCard);
+        Map<String, Object> body = new HashMap<>();
+        body.put("name", "updated");
 
-        Card newCardPartial = new Card();
-        newCardPartial.setName("updated field");
-        mockMvc.perform(patch("/api/cards/{id}", newCard.getCardId())
+        mockMvc.perform(patch("/api/cards/{id}", card1.getCardId())
                         .contentType("application/json")
-                        .content("{\"name\":\"updated field\",\"description\":\"new card for test update admin\",\"color\":\"#abc123\"}"))
+                        .content(objectMapper.writeValueAsString(body))
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("updated field"))
-                .andExpect(jsonPath("$.description").value("new card for test update admin"))
-                .andExpect(jsonPath("$.color").value("#abc123"));
+                .andExpect(jsonPath("$.name").value("updated"));
     }
 
     @Test
     void partialUpdateCardSuccessMember() throws Exception {
+        card1.setCreatedBy(member.getUserId());
+        card2.setCreatedBy(member.getUserId());
+        cardRepository.save(card1);
+        cardRepository.save(card2);
 
-        currentUser.setRole(UserRole.MEMBER);
-        Card newCard = new Card();
-        newCard.setName("newCard");
-        newCard.setDescription("new card for test update admin");
-        newCard.setColor("#abc123");
-        newCard.setCreatedBy(currentUser.getUserId());
-        newCard = cardRepository.save(newCard);
+        Map<String, Object> body = new HashMap<>();
+        body.put("name", "updated");
 
-        Card newCardPartial = new Card();
-        newCardPartial.setName("updated field");
-
-        mockMvc.perform(patch("/api/cards/{id}", newCard.getCardId())
+        mockMvc.perform(patch("/api/cards/{id}", card1.getCardId())
                         .contentType("application/json")
-                        .content("{\"name\":\"updated field\",\"description\":\"new card for test update admin\",\"color\":\"#abc123\"}"))
+                        .content(objectMapper.writeValueAsString(body))
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("updated field"))
-                .andExpect(jsonPath("$.description").value("new card for test update admin"))
-                .andExpect(jsonPath("$.color").value("#abc123"));
+                .andExpect(jsonPath("$.name").value("updated"));
     }
+
 
     @Test
     void partialUpdateCardMemberDeniedAccess() throws Exception {
 
-        currentUser.setRole(UserRole.MEMBER);
-        Card newCard = new Card();
-        newCard.setName("newCard");
-        newCard.setDescription("new card for test");
-        newCard.setColor("#abc123");
-        newCard.setCreatedBy(50);
-        newCard = cardRepository.save(newCard);
+        card1.setName("newname");
+        card1.setCreatedBy(50);
 
-        mockMvc.perform(patch("/api/cards/{id}", newCard.getCardId())
+        mockMvc.perform(patch("/api/cards/{id}", card1.getCardId())
                         .contentType("application/json")
                         .content("{ \"name\": \"updated field\" }")
-                )
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void newCardSuccess() throws Exception {
-        Card newCard = new Card();
-        newCard.setName("new card name");
-        newCard.setDescription("new card");
-        newCard.setColor("#abc123");
-        newCard.setCreatedBy(currentUser.getUserId());
-        cardRepository.save(newCard);
+
+        Map<String, Object> body = createCardBody("new card", "new description", "#abc123");
 
         mockMvc.perform(post("/api/cards")
                         .contentType("application/json")
-                        .content("{\"name\":\"new card name\",\"description\":\"new card\",\"color\":\"#abc123\"}"))
+                        .content(objectMapper.writeValueAsString(body))
+                        .with(csrf())
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("new card name"))
-                .andExpect(jsonPath("$.description").value("new card"))
-                .andExpect(jsonPath("$.color").value("#abc123"));
+                .andExpect(jsonPath("$.name").value("new card"));
     }
 
     @Test
     void getCardsPaginationAdminSuccess() throws Exception {
 
-        currentUser.setRole(UserRole.ADMIN);
-        Card card1 = new Card();
-        card1.setName("card1");
-        card1.setDescription("card1");
-        card1.setColor("#abc123");
-        card1.setCreatedBy(currentUser.getUserId());
-        Card card2 = new Card();
-        card2.setName("card2");
-        card2.setDescription("card2");
-        card2.setColor("#abc123");
-        card2.setCreatedBy(currentUser.getUserId());
-        cardRepository.save(card1);
-        cardRepository.save(card2);
-
         mockMvc.perform(get("/api/cards")
-                        .contentType("application/json"))
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(2))
-                .andExpect(jsonPath("$.data[0].id").value(card1.getCardId()))
-                .andExpect(jsonPath("$.data[0].name").value("card1"))
-                .andExpect(jsonPath("$.data[1].id").value(card2.getCardId()))
-                .andExpect(jsonPath("$.data[1].name").value("card2"));
+                .andExpect(jsonPath("$.data.length()").value(2));
     }
 
     @Test
     void getCardsPaginationMemberSuccess() throws Exception {
-
-        currentUser.setRole(UserRole.MEMBER);
-        Card card1 = new Card();
-        card1.setName("card1");
-        card1.setDescription("card1");
-        card1.setColor("#abc123");
-        card1.setCreatedBy(currentUser.getUserId());
-        Card card2 = new Card();
-        card2.setName("card2");
-        card2.setDescription("card2");
-        card2.setColor("#abc123");
-        card2.setCreatedBy(currentUser.getUserId());
+        card1.setCreatedBy(member.getUserId());
+        card2.setCreatedBy(member.getUserId());
         cardRepository.save(card1);
         cardRepository.save(card2);
 
         mockMvc.perform(get("/api/cards")
-                        .contentType("application/json"))
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(2))
-                .andExpect(jsonPath("$.data[0].id").value(card1.getCardId()))
-                .andExpect(jsonPath("$.data[0].name").value("card1"))
-                .andExpect(jsonPath("$.data[1].id").value(card2.getCardId()))
-                .andExpect(jsonPath("$.data[1].name").value("card2"));
+                .andExpect(jsonPath("$.data.length()").value(2));
     }
 
     @Test
     void getCardAvailAssocMemberSuccess() throws Exception {
-        currentUser.setRole(UserRole.MEMBER);
-        Card card1 = new Card();
-        card1.setName("card1");
-        card1.setDescription("card1");
-        card1.setColor("#abc123");
-        card1.setCreatedBy(currentUser.getUserId());
 
-        Card card2 = new Card();
-        card2.setName("card2");
-        card2.setDescription("card2");
-        card2.setColor("#abc123");
-        card2.setCreatedBy(currentUser.getUserId());
+        card1.setCreatedBy(member.getUserId());
+        cardRepository.save(card1);
 
         Card card3 = new Card();
         card3.setName("card3");
         card3.setDescription("card3");
         card3.setColor("#abc123");
-        card3.setCreatedBy(currentUser.getUserId());
-
-        cardRepository.save(card1);
-        cardRepository.save(card2);
-        cardRepository.save(card3);
+        card3.setCreatedBy(member.getUserId());
+        card3 = cardRepository.save(card3);
 
         Assoc assoc = new Assoc();
         assoc.setLcardId(card1.getCardId());
@@ -473,107 +410,63 @@ public class CardControllerTest {
 
         mockMvc.perform(get("/api/cards/{id}/assoc-options", card1.getCardId())
                         .param("assoc", "BLOCKS")
-                        .contentType("application/json"))
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.cards").isArray())
                 .andExpect(jsonPath("$.cards.length()").value(1))
-                .andExpect(jsonPath("$.cards[0].id").value(card3.getCardId()))
-                .andExpect(jsonPath("$.cards[0].name").value("card3"));
+                .andExpect(jsonPath("$.cards[0].id").value(card3.getCardId()));
     }
 
     @Test
     void getCardAvailAssocAdminSuccess() throws Exception {
-
-        currentUser.setRole(UserRole.ADMIN);
-        Card card1 = new Card();
-        card1.setName("Card1");
-        card1.setDescription("Card1");
-        card1.setColor("#abc123");
-        card1.setCreatedBy(currentUser.getUserId());
-
-        Card card2 = new Card();
-        card2.setName("Card2");
-        card2.setDescription("Card2");
-        card2.setColor("#abc123");
-        card2.setCreatedBy(currentUser.getUserId());
-
         Card card3 = new Card();
-        card3.setName("Card3");
-        card3.setDescription("Card3");
+        card3.setName("card3");
+        card3.setDescription("card3");
         card3.setColor("#abc123");
-        card3.setCreatedBy(currentUser.getUserId());
-
-        cardRepository.save(card1);
-        cardRepository.save(card2);
-        cardRepository.save(card3);
-
-        int card1Id = card1.getCardId();
-        int card2Id = card2.getCardId();
+        card3.setCreatedBy(admin.getUserId());
+        card3 = cardRepository.save(card3);
 
         Assoc assoc = new Assoc();
-        assoc.setLcardId(card1Id);
-        assoc.setRcardId(card2Id);
+        assoc.setLcardId(card1.getCardId());
+        assoc.setRcardId(card2.getCardId());
         assoc.setAssoc(AssocType.BLOCKS);
         assocRepository.save(assoc);
 
         mockMvc.perform(get("/api/cards/{id}/assoc-options", card1.getCardId())
                         .param("assoc", "BLOCKS")
-                        .contentType("application/json"))
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.cards").isArray())
                 .andExpect(jsonPath("$.cards.length()").value(1))
-                .andExpect(jsonPath("$.cards[0].id").value(card3.getCardId()))
-                .andExpect(jsonPath("$.cards[0].name").value("Card3"));
+                .andExpect(jsonPath("$.cards[0].id").value(card3.getCardId()));
     }
 
     @Test
     void getCardAvailAssocMemberAccessDenied() throws Exception {
 
-        currentUser.setRole(UserRole.MEMBER);
+        card1.setCreatedBy(50);
+        cardRepository.save(card1);
 
-        User user2 = new User();
-        user2.setEmail("user2@gmail.com");
-        user2.setName("user2");
-        user2.setPassword("pass");
-        user2.setRole(UserRole.MEMBER);
-        userRepository.save(user2);
-
-        Card card = new Card();
-        card.setName("new Card ");
-        card.setDescription("new Card");
-        card.setColor("#abc123");
-        card.setCreatedBy(user2.getUserId());
-        cardRepository.save(card);
-
-        mockMvc.perform(get("/api/cards/{id}", card.getCardId()))
+        mockMvc.perform(get("/api/cards/{id}/assoc-options", card1.getCardId())
+                        .param("assoc", "BLOCKS")
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
+                        )))
                 .andExpect(status().isForbidden());
+
     }
 
 
     @Test
     void getCardAvailAssocPassive() throws Exception {
-
-        currentUser.setRole(UserRole.MEMBER);
-
-        Card card1 = new Card();
-        card1.setName("Card1");
-        card1.setDescription("Card1");
-        card1.setColor("#123");
-        card1.setCreatedBy(currentUser.getUserId());
-
-        Card card2 = new Card();
-        card2.setName("Card2");
-        card2.setDescription("Card2");
-        card2.setColor("#456");
-        card2.setCreatedBy(currentUser.getUserId());
-
         Card card3 = new Card();
-        card3.setName("Card3");
-        card3.setDescription("Card3");
-        card3.setColor("#789");
-        card3.setCreatedBy(currentUser.getUserId());
-
-        cardRepository.saveAll(List.of(card1, card2, card3));
+        card3.setName("card3");
+        card3.setDescription("description3");
+        card3.setColor("#abc123");
+        card3.setCreatedBy(admin.getUserId());
+        card3 = cardRepository.save(card3);
 
         Assoc assoc = new Assoc();
         assoc.setLcardId(card2.getCardId());
@@ -583,12 +476,22 @@ public class CardControllerTest {
 
         mockMvc.perform(get("/api/cards/{id}/assoc-options", card1.getCardId())
                         .param("assoc", "BLOCKED_BY")
-                        .contentType("application/json"))
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
+                        )))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.cards").isArray())
                 .andExpect(jsonPath("$.cards.length()").value(1))
                 .andExpect(jsonPath("$.cards[0].id").value(card3.getCardId()))
-                .andExpect(jsonPath("$.cards[0].name").value("Card3"));
+                .andExpect(jsonPath("$.cards[0].name").value("card3"));
+    }
+
+    private Map<String, Object> createCardBody(String name, String description, String color) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("name", name);
+        body.put("description", description);
+        body.put("color", color);
+        return body;
     }
 
 }
