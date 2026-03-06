@@ -1,6 +1,7 @@
 package com.logicea.cards.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.logicea.cards.dto.AssocInputDto;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
@@ -21,9 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
@@ -55,6 +54,8 @@ public class AssocControllerTest {
     private Card card1;
     private Card card2;
 
+    private AssocInputDto assocBody;
+
     @BeforeEach
     void setup() {
         admin = new User();
@@ -84,10 +85,10 @@ public class AssocControllerTest {
 
     @Test
     void newAssocRightNotFound() throws Exception {
-        Map<String, Object> body = createjsonBody(1, card1.getCardId(), 999, "BLOCKS");
+        assocBody = new AssocInputDto(card1.getCardId(), 999, AssocType.BLOCKS);
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(assocBody))
                         .with(csrf())
                         .with(user("user").roles("ADMIN")))
                 .andExpect(status().isNotFound());
@@ -95,10 +96,12 @@ public class AssocControllerTest {
 
     @Test
     void newAssocLeftNotFound() throws Exception {
-        Map<String, Object> body = createjsonBody(1, 999, card2.getCardId(), "BLOCKS");
+
+        assocBody = new AssocInputDto(999, card2.getCardId(), AssocType.BLOCKS);
+
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(assocBody))
                         .with(csrf())
                         .with(user("user").roles("ADMIN")))
                 .andExpect(status().isNotFound());
@@ -114,10 +117,11 @@ public class AssocControllerTest {
         assoc.setRcardId(card1.getCardId());
         assoc.setAssoc(AssocType.BLOCKS);
 
-        Map<String, Object> body = createjsonBody(1, card2.getCardId(), card1.getCardId(), "BLOCKS");
+        assocBody = new AssocInputDto(card2.getCardId(), card1.getCardId(), AssocType.BLOCKS);
+
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(assocBody))
                         .with(csrf())
                         .with(authentication(new UsernamePasswordAuthenticationToken(member, null, List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))))))
                 .andExpect(status().isForbidden());
@@ -132,10 +136,11 @@ public class AssocControllerTest {
         assoc.setAssoc(AssocType.BLOCKS);
         assocRepository.save(assoc);
 
-        Map<String, Object> body = createjsonBody(4, card1.getCardId(), card2.getCardId(), "BLOCKS");
+        assocBody = new AssocInputDto(card1.getCardId(), card2.getCardId(), AssocType.BLOCKS);
+
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(assocBody))
                         .with(csrf())
                         .with(authentication(new UsernamePasswordAuthenticationToken(
                                 admin, null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
@@ -147,7 +152,8 @@ public class AssocControllerTest {
     @Test
     void newAssocSuccess() throws Exception {
 
-        Map<String, Object> body = createjsonBody(1, card1.getCardId(), card2.getCardId(), "BLOCKS");
+        assocBody = new AssocInputDto(card1.getCardId(), card2.getCardId(), AssocType.BLOCKS);
+
         Card lcard = new Card();
         lcard.setName("card1");
 
@@ -158,7 +164,7 @@ public class AssocControllerTest {
 
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(assocBody))
                         .with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())))
@@ -170,11 +176,11 @@ public class AssocControllerTest {
 
     @Test
     void validateOwnerAdmin() throws Exception {
-        Map<String, Object> body = createjsonBody(0L, card1.getCardId(), card2.getCardId(), "BLOCKS");
+        assocBody = new AssocInputDto(card1.getCardId(), card2.getCardId(), AssocType.BLOCKS);
 
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body)).with(csrf())
+                        .content(objectMapper.writeValueAsString(assocBody)).with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
                         )))
@@ -190,10 +196,12 @@ public class AssocControllerTest {
         cardRepository.save(card1);
         cardRepository.save(card2);
 
-        Map<String, Object> body = createjsonBody(0, card1.getCardId(), card2.getCardId(), "BLOCKS");
+
+        assocBody = new AssocInputDto(card1.getCardId(), card2.getCardId(), AssocType.BLOCKS);
+
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body)).with(csrf())
+                        .content(objectMapper.writeValueAsString(assocBody)).with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
                         )))
@@ -209,11 +217,12 @@ public class AssocControllerTest {
         cardRepository.save(card1);
         cardRepository.save(card2);
 
-        Map<String, Object> body = createjsonBody(0, card1.getCardId(), card2.getCardId(), "BLOCKS");
+        assocBody = new AssocInputDto(card1.getCardId(), card2.getCardId(), AssocType.BLOCKS);
+
 
         mockMvc.perform(post("/card-assocs")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body)).with(csrf())
+                        .content(objectMapper.writeValueAsString(assocBody)).with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
                         )))
@@ -308,14 +317,6 @@ public class AssocControllerTest {
                 .andExpect(status().isForbidden());
     }
 
-    private Map<String, Object> createjsonBody(long id, long lcardId, long rcardId, String type) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("id", id);
-        body.put("lcardId", lcardId);
-        body.put("rcardId", rcardId);
-        body.put("assoc", type);
-        return body;
-    }
 
 }
 

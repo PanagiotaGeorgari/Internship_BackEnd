@@ -12,7 +12,6 @@ public class AssocMapper {
 
     public static Assoc toEntity(AssocDto assocDto) {
         Assoc assoc = new Assoc();
-        assoc.setId(assocDto.id());
         assoc.setLcardId(assocDto.lcardId());
         assoc.setRcardId(assocDto.rcardId());
         assoc.setAssoc(assocDto.assoc());
