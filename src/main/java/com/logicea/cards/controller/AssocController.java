@@ -1,6 +1,6 @@
 package com.logicea.cards.controller;
 
-import com.logicea.cards.dto.AssocDto;
+import com.logicea.cards.dto.AssocInputDto;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.mapper.AssocMapper;
 import com.logicea.cards.service.AssocService;
@@ -23,7 +23,7 @@ public class AssocController {
 
     @PostMapping("/card-assocs")
     @PreAuthorize("hasAnyRole('ADMIN','MEMBER')")
-    public ResponseEntity<Map<String, List<Integer>>> createAssoc(@RequestBody AssocDto assocDto) throws AccessDeniedException {
+    public ResponseEntity<Map<String, List<Integer>>> createAssoc(@RequestBody AssocInputDto assocDto) throws AccessDeniedException {
         Assoc assoc = AssocMapper.toEntity(assocDto);
         List<Integer> ids = assocService.newAssoc(assoc);
         return ResponseEntity.ok(Map.of("ids", ids));
