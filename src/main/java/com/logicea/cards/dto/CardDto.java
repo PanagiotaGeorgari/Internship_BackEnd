@@ -9,7 +9,7 @@ import java.time.Instant;
 
 
 public record CardDto(
-        int cardId,
+        Integer cardId,
         @NotBlank(message = "name field is mandatory")
         @Size(min = 1, max = 50, message = "is between 1 - 50 characters")
         String name,

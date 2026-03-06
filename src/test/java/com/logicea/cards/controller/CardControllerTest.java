@@ -1,6 +1,7 @@
 package com.logicea.cards.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.logicea.cards.dto.CardDto;
 import com.logicea.cards.entity.Assoc;
 import com.logicea.cards.entity.Card;
 import com.logicea.cards.entity.User;
@@ -18,9 +19,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -55,6 +53,7 @@ public class CardControllerTest {
     private Card card1;
     private Card card2;
 
+    private CardDto cardBody;
 
     @BeforeEach
     void setUp() {
@@ -210,11 +209,11 @@ public class CardControllerTest {
 
     @Test
     void replaceNotFound() throws Exception {
-        Map<String, Object> body = createCardBody("updated", "updated desc", "#abc123");
 
+        cardBody = new CardDto(null, "updated", "updated desc", "#abc123", null, admin.getUserId(), null, null, admin.getUserId(), null);
         mockMvc.perform(put("/api/cards/{id}", 50)
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(cardBody))
                         .with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
@@ -228,11 +227,10 @@ public class CardControllerTest {
     @Test
     void replaceCardSuccessAdmin() throws Exception {
 
-        Map<String, Object> body = createCardBody("updated", "updated desc", "#abc123");
-
+        cardBody = new CardDto(null, "updated", "updated desc", "#abc123", null, admin.getUserId(), null, null, admin.getUserId(), null);
         mockMvc.perform(put("/api/cards/{id}", card1.getCardId())
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(cardBody))
                         .with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
@@ -247,11 +245,11 @@ public class CardControllerTest {
         card1.setCreatedBy(member.getUserId());
         cardRepository.save(card1);
 
-        Map<String, Object> body = createCardBody("updated", "updated desc", "#abc123");
+        cardBody = new CardDto(null, "updated", "updated desc", "#abc123", null, member.getUserId(), null, null, member.getUserId(), null);
 
         mockMvc.perform(put("/api/cards/{id}", card1.getCardId())
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(cardBody))
                         .with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
@@ -262,12 +260,13 @@ public class CardControllerTest {
     @Test
     void replaceCardMemberNotAccess() throws Exception {
 
-        Map<String, Object> body = createCardBody("updated", "updated desc", "#abc123");
+        cardBody = new CardDto(null, "updated", "updated desc", "#abc123", null, member.getUserId(), null, null, member.getUserId(), null);
+
         card1.setCreatedBy(50);
 
         mockMvc.perform(put("/api/cards/{id}", card1.getCardId())
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(cardBody))
                         .with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
@@ -278,14 +277,11 @@ public class CardControllerTest {
     @Test
     void partialUpdateCardNotFound() throws Exception {
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("name", "updated field");
-        body.put("description", "new card for test update admin");
-        body.put("color", "#abc123");
+        cardBody = new CardDto(null, "updated field", "new card for test update admin", "#abc123", null, member.getUserId(), null, null, member.getUserId(), null);
 
         mockMvc.perform(patch("/api/cards/{id}", 50)
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(cardBody))
                         .with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
@@ -296,12 +292,11 @@ public class CardControllerTest {
     @Test
     void partialUpdateCardSuccessAdmin() throws Exception {
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("name", "updated");
+        cardBody = new CardDto(null, "updated", "updated desc", "#abc123", null, admin.getUserId(), null, null, admin.getUserId(), null);
 
         mockMvc.perform(patch("/api/cards/{id}", card1.getCardId())
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(cardBody))
                         .with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
@@ -317,12 +312,11 @@ public class CardControllerTest {
         cardRepository.save(card1);
         cardRepository.save(card2);
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("name", "updated");
+        cardBody = new CardDto(null, "updated", "updated desc", "#abc123", null, member.getUserId(), null, null, member.getUserId(), null);
 
         mockMvc.perform(patch("/api/cards/{id}", card1.getCardId())
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(cardBody))
                         .with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
@@ -350,11 +344,11 @@ public class CardControllerTest {
     @Test
     void newCardSuccess() throws Exception {
 
-        Map<String, Object> body = createCardBody("new card", "new description", "#abc123");
+        cardBody = new CardDto(null, "new card", "new description", "#abc123", null, member.getUserId(), null, null, member.getUserId(), null);
 
         mockMvc.perform(post("/api/cards")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body))
+                        .content(objectMapper.writeValueAsString(cardBody))
                         .with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities())
@@ -486,13 +480,6 @@ public class CardControllerTest {
                 .andExpect(jsonPath("$.cards[0].name").value("card3"));
     }
 
-    private Map<String, Object> createCardBody(String name, String description, String color) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("name", name);
-        body.put("description", description);
-        body.put("color", color);
-        return body;
-    }
 
 }
 
