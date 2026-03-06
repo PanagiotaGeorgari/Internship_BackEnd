@@ -1,6 +1,7 @@
 package com.logicea.cards.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.logicea.cards.dto.UserDto;
 import com.logicea.cards.entity.User;
 import com.logicea.cards.enums.UserRole;
 import com.logicea.cards.repository.UserRepository;
@@ -12,9 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,18 +34,15 @@ public class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private UserDto userInput= new UserDto(null, "user@gmail.com", "user", UserRole.ADMIN, "pass");;
+
 
     @Test
     void createUserSuccess() throws Exception {
-        Map<String, Object> body = new HashMap<>();
-        body.put("name", "user");
-        body.put("password", "pass");
-        body.put("email", "user@gmail.com");
-        body.put("role", "ADMIN");
 
         mockMvc.perform(post("/user-info/register")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body)))
+                        .content(objectMapper.writeValueAsString(userInput)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("user"))
                 .andExpect(jsonPath("$.email").value("user@gmail.com"))
@@ -74,13 +69,10 @@ public class UserControllerTest {
 
         userRepository.save(user);
 
-        Map<String, String> body = new HashMap<>();
-        body.put("email", email);
-        body.put("password", password);
 
         mockMvc.perform(post("/user-info/token")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body)))
+                        .content(objectMapper.writeValueAsString(userInput)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists());
     }
@@ -98,13 +90,11 @@ public class UserControllerTest {
         user.setName("user");
         userRepository.save(user);
 
-        Map<String, String> body = new HashMap<>();
-        body.put("email", email);
-        body.put("password", "wrongPass");
+        userInput = new UserDto(null, email, "user", UserRole.ADMIN, "wrongPassword");
 
         mockMvc.perform(post("/user-info/token")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body)))
+                        .content(objectMapper.writeValueAsString(userInput)))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -121,13 +111,10 @@ public class UserControllerTest {
 
         userRepository.save(user);
 
-        Map<String, String> body = new HashMap<>();
-        body.put("email", "user@gmail.com");
-        body.put("password", "pass");
-
+        userInput = new UserDto(null, "user@gmail.com", "user", UserRole.ADMIN, "pass");
         mockMvc.perform(post("/user-info/token")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(body)))
+                        .content(objectMapper.writeValueAsString(userInput)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists());
 

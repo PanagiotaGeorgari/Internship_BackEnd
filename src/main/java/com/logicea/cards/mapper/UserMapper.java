@@ -11,7 +11,11 @@ public class UserMapper {
     }
 
     public static User toEntity(UserDto userDto) {
-        return new User(userDto.userId(), userDto.email(), userDto.name(),
-                userDto.role(), userDto.password());
+        User user = new User();
+        user.setEmail(userDto.email());
+        user.setName(userDto.name());
+        user.setRole(userDto.role());
+        user.setPassword(userDto.password());
+        return user;
     }
 }
