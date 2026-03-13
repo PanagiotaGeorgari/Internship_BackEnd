@@ -112,11 +112,6 @@ public class AssocControllerTest {
 
         card2.setCreatedBy(50);
 
-        Assoc assoc = new Assoc();
-        assoc.setLcardId(card2.getCardId());
-        assoc.setRcardId(card1.getCardId());
-        assoc.setAssoc(AssocType.BLOCKS);
-
         assocBody = new AssocInputDto(card2.getCardId(), card1.getCardId(), AssocType.BLOCKS);
 
         mockMvc.perform(post("/card-assocs")
