@@ -12,17 +12,13 @@ It includes token-based security, validation handling, custom exceptions, pagina
 - [About the Project](#about-the-project)
 - [Technologies](#technologies)
 - [Features](#features)
-- [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Run the Application](#run-the-application)
 - [Run with Docker](#run-with-docker)
 - [Authentication](#authentication)
-- [API Overview](#api-overview)
 - [Error Handling](#error-handling)
 - [Build](#build)
-- [Git Ignore](#git-ignore)
-- [Author](#author)
 
 ---
 
@@ -61,5 +57,118 @@ Most API endpoints require authentication, except for user registration and toke
 - Validation error handling
 - Custom exception handling
 - Docker support
+
+---
+
+## Prerequisites
+
+Before running the project, make sure you have installed:
+- Java 17 or newer
+- Maven, or use the included Maven Wrapper
+- Git
+- Docker, optional
+
+---
+
+## Installation
+
+Clone the repository:
+
+git clone https://github.com/PanagiotaGeorgari/Internship_BackEnd.git
+
+Navigate into the project folder:
+
+cd Internship_BackEnd
+
+---
+
+## Run the Application
+
+Using Maven Wrapper on Windows
+mvnw.cmd spring-boot:run
+
+---
+
+## Run with Docker
+
+Build and start the application using Docker Compose:
+
+docker-compose up --build
+
+Stop the containers:
+
+docker-compose down
+
+---
+
+## Authentication
+
+The application uses stateless token-based authentication.
+The following endpoints are public and do not require authentication:
+
+POST /user-info/register
+POST /user-info/token
+
+All other endpoints require authentication.
+Passwords are encrypted using BCrypt.
+
+---
+
+## Error Handling
+
+The application includes global exception handling for REST API errors.
+
+### Validation Errors
+
+When a request body is invalid, the API returns a 400 Bad Request response with field-specific messages.
+
+Example:
+
+{
+"name": "Name is required",
+"description": "Description is required"
+}
+
+
+### Card Not Found
+
+When a card does not exist, the API returns a 404 Not Found response.
+
+Example:
+
+{
+"error": "Card with id 1 not found"
+}
+
+
+### Access Denied
+
+When a user does not have permission to access a resource, the API returns a 403 Forbidden response.
+
+Example:
+
+{
+"error": "You do not have permission to access this resource"
+}
+
+### Association Already Exists
+
+When an association already exists, the API returns a 409 Conflict response.
+
+Example:
+
+Assoc Already exists!
+
+
+### Association Not Found
+
+When an association is not found, the API returns a 404 Not Found response.
+
+---
+
+## Build 
+Build the project using Maven:
+
+mvn clean install
 
 ---
