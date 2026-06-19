@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // disable for cookies
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user-info/register", "/user-info/token").permitAll()//fr this urls there is not any authentication
+                        .requestMatchers("/user-info/register", "/user-info/token").permitAll()// fοr this urls there is not any authentication
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated() // any other request needs authentication
                 )
